@@ -59,8 +59,8 @@ export default function TeacherView({ title, subtitle, cells: initialCells, rost
       )}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{title}</h1>
-          <p className="text-slate-500">{subtitle} · สอน {hours} ชั่วโมง/สัปดาห์</p>
+          <h1 className="text-2xl font-bold text-brand-800">{title}</h1>
+          <p className="text-stone-500">{subtitle} · สอน {hours} ชั่วโมง/สัปดาห์</p>
         </div>
         <div className="flex gap-2">
           {editing ? (
@@ -76,7 +76,7 @@ export default function TeacherView({ title, subtitle, cells: initialCells, rost
           )}
         </div>
       </div>
-      {editing && <p className="rounded-xl bg-indigo-50 p-3 text-sm text-indigo-700">คลิกช่องว่างในตารางเพื่อเลือก/ยกเลิกช่วงเวลาที่ &quot;ไม่สะดวกสอน/ติดราชการ&quot; แล้วกดบันทึก</p>}
+      {editing && <p className="rounded-xl bg-brand-50 p-3 text-sm text-brand-700">คลิกช่องว่างในตารางเพื่อเลือก/ยกเลิกช่วงเวลาที่ &quot;ไม่สะดวกสอน/ติดราชการ&quot; แล้วกดบันทึก</p>}
       {msg && <p role="status" className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{msg}</p>}
       <TimetableGrid ref={ref} cells={cells} show="group" blocked={blocked} conflicts={conflicts}
         onCellClick={editing ? toggle : undefined} onCardClick={editing ? undefined : setSelected} />
@@ -84,7 +84,7 @@ export default function TeacherView({ title, subtitle, cells: initialCells, rost
         <section className="card">
           <div className="flex items-center justify-between">
             <h2 className="font-bold">👥 รายชื่อนักเรียน {selected.group_name} — {selected.subject_name}</h2>
-            <button className="text-slate-400" onClick={() => setSelected(null)} aria-label="ปิด">✕</button>
+            <button className="text-stone-400" onClick={() => setSelected(null)} aria-label="ปิด">✕</button>
           </div>
           <ol className="mt-2 grid list-decimal gap-1 pl-6 text-sm sm:grid-cols-2">
             {roster.filter((r) => r.group_id === selected.group_id).map((r) => (
@@ -93,7 +93,7 @@ export default function TeacherView({ title, subtitle, cells: initialCells, rost
           </ol>
         </section>
       )}
-      {!selected && !editing && <p className="text-sm text-slate-500">คลิกการ์ดวิชาเพื่อดูรายชื่อนักเรียนในคลาส</p>}
+      {!selected && !editing && <p className="text-sm text-stone-500">คลิกการ์ดวิชาเพื่อดูรายชื่อนักเรียนในคลาส</p>}
     </div>
   );
 }

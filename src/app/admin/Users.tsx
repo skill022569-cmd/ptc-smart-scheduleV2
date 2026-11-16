@@ -34,14 +34,14 @@ export default function Users() {
       <section className="card overflow-x-auto">
         <h2 className="mb-2 font-bold">บัญชีบุคลากร</h2>
         <table className="w-full text-left text-sm">
-          <thead className="text-slate-500"><tr><th className="py-1">ชื่อผู้ใช้</th><th>สิทธิ์</th><th>อีเมล</th><th>รหัสครู</th><th>สถานะ</th><th /></tr></thead>
+          <thead className="text-stone-500"><tr><th className="py-1">ชื่อผู้ใช้</th><th>สิทธิ์</th><th>อีเมล</th><th>รหัสครู</th><th>สถานะ</th><th /></tr></thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.user_id} className="border-t">
                 <td className="py-1.5">{u.username}</td><td>{u.role}</td><td>{u.email}</td><td>{u.teacher_id ?? "-"}</td>
                 <td>{Number(u.locked) ? <span className="text-rose-600">ถูกล็อก</span> : "ปกติ"}</td>
                 <td className="whitespace-nowrap text-right">
-                  {Number(u.locked) ? <button className="px-2 text-indigo-600" onClick={() => patch({ id: u.user_id, action: "unlock" }, `ปลดล็อก ${u.username} แล้ว`)}>ปลดล็อก</button> : null}
+                  {Number(u.locked) ? <button className="px-2 text-brand-600" onClick={() => patch({ id: u.user_id, action: "unlock" }, `ปลดล็อก ${u.username} แล้ว`)}>ปลดล็อก</button> : null}
                   <button className="px-2 text-amber-700" onClick={() => confirm(`รีเซ็ตรหัสผ่าน ${u.username}?`) && patch({ id: u.user_id, action: "reset" }, `รีเซ็ต ${u.username} แล้ว`)}>รีเซ็ตรหัสผ่าน</button>
                 </td>
               </tr>

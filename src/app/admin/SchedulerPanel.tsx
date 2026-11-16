@@ -36,7 +36,7 @@ export default function SchedulerPanel() {
     <div className="grid gap-4 lg:grid-cols-2">
       <section className="card space-y-3">
         <h2 className="text-lg font-bold">🤖 AI Auto-Scheduler</h2>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-stone-600">
           ดึงข้อมูลหลักสูตร ครู ห้อง และเวลาที่ครูไม่สะดวกจาก TiDB มาคำนวณ โดยห้ามห้อง/ครู/กลุ่มเรียนชนกัน
           ใช้ห้องให้ตรงประเภทวิชาปฏิบัติ วางวิชาปฏิบัติเป็นบล็อกต่อเนื่อง ไม่คร่อมพักเที่ยง และไม่เกินชั่วโมงสอนสูงสุดของครู
         </p>
@@ -50,7 +50,7 @@ export default function SchedulerPanel() {
             </ul>
           </div>
         )}
-        {msg && <p role="status" className="rounded-xl bg-slate-100 p-3 text-sm">{msg}</p>}
+        {msg && <p role="status" className="rounded-xl bg-stone-100 p-3 text-sm">{msg}</p>}
         <div className="flex flex-wrap gap-2 border-t pt-3">
           <a className="btn-ghost" href="/api/admin/export?type=timetable">⬇️ ส่งออกตาราง (CSV/Excel)</a>
           <a className="btn-ghost" href="/api/admin/export?type=workload">⬇️ ภาระงานครู (CSV/Excel)</a>
@@ -58,15 +58,15 @@ export default function SchedulerPanel() {
       </section>
       <section className="card">
         <h2 className="mb-2 text-lg font-bold">⏪ จุดกู้คืน (เวอร์ชันตาราง)</h2>
-        <p className="mb-3 text-sm text-slate-500">ระบบบันทึกเวอร์ชันอัตโนมัติก่อนรัน AI และก่อนย้อนกลับทุกครั้ง</p>
+        <p className="mb-3 text-sm text-stone-500">ระบบบันทึกเวอร์ชันอัตโนมัติก่อนรัน AI และก่อนย้อนกลับทุกครั้ง</p>
         <ul className="max-h-96 space-y-2 overflow-y-auto">
           {snaps.map((s) => (
-            <li key={s.snapshot_id} className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 p-3 text-sm">
-              <div><div className="font-medium">{s.label}</div><div className="text-slate-500">{s.created_at} · {s.row_count} คาบ</div></div>
+            <li key={s.snapshot_id} className="flex items-center justify-between gap-2 rounded-xl bg-stone-50 p-3 text-sm">
+              <div><div className="font-medium">{s.label}</div><div className="text-stone-500">{s.created_at} · {s.row_count} คาบ</div></div>
               <button className="btn-ghost !py-1 text-xs" disabled={busy} onClick={() => restore(s)}>ย้อนกลับ</button>
             </li>
           ))}
-          {!snaps.length && <li className="text-sm text-slate-500">ยังไม่มีเวอร์ชันที่บันทึก</li>}
+          {!snaps.length && <li className="text-sm text-stone-500">ยังไม่มีเวอร์ชันที่บันทึก</li>}
         </ul>
       </section>
     </div>

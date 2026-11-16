@@ -39,8 +39,8 @@ export default function StudentView({ title, subtitle, cells, theme: initial }: 
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{title}</h1>
-          <p className="text-slate-500">{subtitle}</p>
+          <h1 className="text-2xl font-bold text-brand-800">{title}</h1>
+          <p className="text-stone-500">{subtitle}</p>
         </div>
         <button className="btn" onClick={() => exportPng(ref.current, title)}>🖼️ บันทึกเป็นรูปภาพ</button>
       </div>
@@ -54,7 +54,7 @@ export default function StudentView({ title, subtitle, cells, theme: initial }: 
           ))}
         </div>
         {(["background", "card", "accent"] as const).map((k) => (
-          <label key={k} className="flex items-center gap-1 text-sm text-slate-600">
+          <label key={k} className="flex items-center gap-1 text-sm text-stone-600">
             {{ background: "พื้นหลัง", card: "การ์ด", accent: "สีหลัก" }[k]}
             <input type="color" value={theme[k]} onChange={(e) => setTheme({ ...theme, [k]: e.target.value })} onBlur={() => save(theme)} />
           </label>

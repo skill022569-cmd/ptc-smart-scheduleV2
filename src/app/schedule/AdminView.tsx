@@ -14,8 +14,8 @@ export default function AdminView({ subtitle, options, current, cells }: {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">ดูตารางทั้งวิทยาลัย</h1>
-        <p className="text-slate-500">{subtitle} · ปรับแก้ตารางได้ที่ จัดการระบบ → ลากวางตาราง</p>
+        <h1 className="text-2xl font-bold text-brand-800">ดูตารางทั้งวิทยาลัย</h1>
+        <p className="text-stone-500">{subtitle} · ปรับแก้ตารางได้ที่ จัดการระบบ → ลากวางตาราง</p>
       </div>
       <div className="card flex flex-wrap gap-3">
         {(Object.keys(LABEL) as (keyof typeof LABEL)[]).map((k) => (
@@ -31,7 +31,7 @@ export default function AdminView({ subtitle, options, current, cells }: {
       {cells.length || current[kind] ? (
         <TimetableGrid cells={cells} show={kind === "teacher" ? "group" : kind === "group" ? "teacher" : "both"} />
       ) : (
-        <p className="text-slate-500">เลือกกลุ่มเรียน ครู หรือห้อง เพื่อดูตาราง</p>
+        <p className="text-stone-500">เลือกกลุ่มเรียน ครู หรือห้อง เพื่อดูตาราง</p>
       )}
     </div>
   );

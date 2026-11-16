@@ -24,4 +24,4 @@ export const ROOM_TYPES = ["ปกติ", "Lab", "โรงฝึกงาน"]
 
 export const PDPA_VERSION = "1.0";
 
-export const DEFAULT_THEME = { background: "#eef2ff", card: "#ffffff", accent: "#4f46e5" };
+export const DEFAULT_THEME = { background: "#f5efe6", card: "#ffffff", accent: "#7f1d26" }; // college colors: maroon + gold

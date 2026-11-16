@@ -1,16 +1,19 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Noto_Sans_Thai } from "next/font/google";
+import Image from "next/image";
+import { Sarabun } from "next/font/google";
 import { getSession } from "@/lib/auth";
+import NavLinks from "@/components/NavLinks";
 import "./globals.css";
 
-const thai = Noto_Sans_Thai({ variable: "--font-thai", subsets: ["thai", "latin"], weight: ["400", "500", "700"] });
+const thai = Sarabun({ variable: "--font-thai", subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "PTC Smart Schedule | วิทยาลัยการอาชีพโพนทอง",
+  title: "ระบบจัดตารางเรียน-ตารางสอน | วิทยาลัยการอาชีพโพนทอง",
   description: "ระบบจัดตารางเรียน-ตารางสอน วิทยาลัยการอาชีพโพนทอง",
+  icons: { icon: "/logo.jpg" },
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#7f1d26" };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const s = await getSession();
@@ -18,30 +21,47 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     { href: "/", label: "หน้าแรก" },
     { href: "/schedule", label: s?.role === "teacher" ? "ตารางสอน" : "ตารางเรียน" },
     { href: "/map", label: "แผนที่วิทยาลัย" },
-    { href: "/assistant", label: "ถาม AI" },
-    ...(s?.role === "admin" ? [{ href: "/admin", label: "จัดการระบบ" }] : []),
+    { href: "/assistant", label: "ถาม-ตอบ AI" },
+    ...(s?.role === "admin" ? [{ href: "/admin", label: "งานวิชาการ" }] : []),
   ];
   return (
     <html lang="th">
-      <body className={`${thai.variable} font-sans antialiased`}>
-        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
-          <nav className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 py-2 text-sm">
-            <Link href="/" className="mr-3 shrink-0 font-bold text-indigo-700">📅 PTC Smart Schedule</Link>
-            {links.map((l) => (
-              <Link key={l.href} href={l.href} className="shrink-0 rounded-lg px-3 py-2 text-slate-700 hover:bg-indigo-50 hover:text-indigo-700">
-                {l.label}
+      <body className={`${thai.variable} flex min-h-screen flex-col font-sans antialiased`}>
+        <header className="sticky top-0 z-30 shadow-sm">
+          <div className="border-b-[3px] border-gold-500 bg-brand-700 text-white">
+            <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5">
+              <Link href="/" className="flex min-w-0 items-center gap-3">
+                <Image src="/logo.jpg" alt="ตราวิทยาลัยการอาชีพโพนทอง" width={48} height={48} priority
+                  className="h-11 w-11 shrink-0 rounded-full bg-white ring-2 ring-gold-400 sm:h-12 sm:w-12" />
+                <span className="min-w-0 leading-tight">
+                  <span className="block truncate text-base font-bold sm:text-lg"><span className="hidden sm:inline">ระบบจัด</span>ตารางเรียน-ตารางสอน</span>
+                  <span className="block truncate text-xs text-gold-100 sm:text-sm">วิทยาลัยการอาชีพโพนทอง<span className="hidden md:inline"> · Phonthong Industrial and Community Education College</span></span>
+                </span>
               </Link>
-            ))}
-            <span className="ml-auto" />
-            {s ? (
-              <Link href="/profile" className="shrink-0 rounded-lg bg-indigo-50 px-3 py-2 font-medium text-indigo-700">👤 {s.username}</Link>
-            ) : (
-              <Link href="/login" className="btn shrink-0 !py-1.5">เข้าสู่ระบบ</Link>
-            )}
+              <span className="ml-auto" />
+              {s ? (
+                <Link href="/profile" className="shrink-0 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium ring-1 ring-white/25 hover:bg-white/20">👤 {s.username}</Link>
+              ) : (
+                <Link href="/login" className="shrink-0 rounded-lg bg-gold-400 px-4 py-2 text-sm font-bold text-brand-900 hover:bg-gold-300">เข้าสู่ระบบ</Link>
+              )}
+            </div>
+          </div>
+          <nav className="bg-white/95 backdrop-blur" aria-label="เมนูหลัก">
+            <div className="mx-auto flex max-w-6xl overflow-x-auto px-2 text-sm">
+              <NavLinks links={links} />
+            </div>
           </nav>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-        <footer className="py-8 text-center text-xs text-slate-400">วิทยาลัยการอาชีพโพนทอง · PTC Smart Schedule</footer>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
+        <footer className="border-t-[3px] border-gold-500 bg-brand-900 text-sm text-brand-100">
+          <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="font-semibold text-white">วิทยาลัยการอาชีพโพนทอง</div>
+              <div>สังกัดสำนักงานคณะกรรมการการอาชีวศึกษา กระทรวงศึกษาธิการ</div>
+            </div>
+            <div className="text-xs text-brand-200">ระบบจัดตารางเรียน-ตารางสอน (PTC Smart Schedule) · คุ้มครองข้อมูลส่วนบุคคลตาม พ.ร.บ. PDPA</div>
+          </div>
+        </footer>
       </body>
     </html>
   );

@@ -25,11 +25,11 @@ export default function OnboardingForm({ mustChange }: { mustChange: boolean }) 
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-stone-900/50 p-4">
       <form onSubmit={submit} role="dialog" aria-modal="true" aria-labelledby="pdpa-title"
         className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <h1 id="pdpa-title" className="text-xl font-bold">🔒 นโยบายความเป็นส่วนตัว (PDPA) ฉบับ {PDPA_VERSION}</h1>
-        <div className="space-y-2 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+        <div className="space-y-2 rounded-xl bg-stone-50 p-4 text-sm text-stone-600">
           <p>วิทยาลัยการอาชีพโพนทองเก็บข้อมูลของคุณเท่าที่จำเป็นต่อการจัดและแสดงตารางเรียน-ตารางสอน ได้แก่ ชื่อ รหัสนักศึกษา/บุคลากร แผนก กลุ่มเรียน อีเมล (บุคลากร) และประวัติการเข้าสู่ระบบเพื่อความปลอดภัย</p>
           <p>ข้อมูลถูกเข้ารหัสทั้งขณะจัดเก็บและรับส่ง อีเมลจะแสดงแบบปิดบังบางส่วนต่อผู้อื่น ประวัติการเข้าสู่ระบบจะถูกลบอัตโนมัติเมื่อครบ 1 ปี</p>
           <p>คุณสามารถขอส่งออกข้อมูลของตนเอง หรือขอลบบัญชีได้ตลอดเวลาที่หน้า โปรไฟล์</p>

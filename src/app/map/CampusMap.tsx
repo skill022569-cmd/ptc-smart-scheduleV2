@@ -37,8 +37,8 @@ export default function CampusMap({ rooms: initialRooms, initial, isAdmin }: { r
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">🗺️ แผนที่วิทยาลัย</h1>
-        <p className="text-slate-500">พิมพ์รหัสห้อง (เช่น AUTO-101) ชื่ออาคาร หรือชื่อแผนก</p>
+        <h1 className="text-2xl font-bold text-brand-800">🗺️ แผนที่วิทยาลัย</h1>
+        <p className="text-stone-500">พิมพ์รหัสห้อง (เช่น AUTO-101) ชื่ออาคาร หรือชื่อแผนก</p>
       </div>
       <input className="input text-lg" placeholder="ค้นหาห้อง / อาคาร / แผนก" aria-label="ค้นหาห้อง" value={query} onChange={(e) => setQuery(e.target.value)} />
       {isAdmin && (
@@ -52,7 +52,7 @@ export default function CampusMap({ rooms: initialRooms, initial, isAdmin }: { r
         </div>
       )}
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <div className={`relative aspect-[10/7] overflow-hidden rounded-2xl ring-1 ring-slate-200 ${pinRoom ? "cursor-crosshair" : ""}`} onClick={placePin}>
+        <div className={`relative aspect-[10/7] overflow-hidden rounded-2xl ring-1 ring-stone-200 ${pinRoom ? "cursor-crosshair" : ""}`} onClick={placePin}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/campus-map.svg" alt="แผนผังวิทยาลัยการอาชีพโพนทอง" className="absolute inset-0 h-full w-full" />
           {BUILDINGS.filter((b) => highlighted.has(b.name)).map((b) => (
@@ -63,7 +63,7 @@ export default function CampusMap({ rooms: initialRooms, initial, isAdmin }: { r
             const hit = matches.includes(r);
             return (
               <div key={r.room_id} title={r.room_id}
-                className={`absolute -translate-x-1/2 -translate-y-full text-center ${hit ? "z-10" : qq ? "opacity-30" : ""}`}
+                className={`absolute -transtone-x-1/2 -transtone-y-full text-center ${hit ? "z-10" : qq ? "opacity-30" : ""}`}
                 style={{ left: `${r.coords!.x}%`, top: `${r.coords!.y}%` }}>
                 <div className={`${hit ? "text-3xl" : "text-base"}`}>📍</div>
                 {hit && <div className="whitespace-nowrap rounded bg-rose-600 px-1.5 text-xs font-bold text-white">{r.room_id}</div>}
@@ -74,12 +74,12 @@ export default function CampusMap({ rooms: initialRooms, initial, isAdmin }: { r
         <aside className="space-y-2">
           {matches.slice(0, 12).map((r) => (
             <div key={r.room_id} className="card !p-3 text-sm">
-              <div className="font-bold text-indigo-700">{r.room_id}</div>
+              <div className="font-bold text-brand-700">{r.room_id}</div>
               <div>{r.building_name} ชั้น {r.floor}</div>
-              <div className="text-slate-500">{r.room_type}{r.department ? ` · ${r.department}` : ""}</div>
+              <div className="text-stone-500">{r.room_type}{r.department ? ` · ${r.department}` : ""}</div>
             </div>
           ))}
-          {qq && !matches.length && !building && <p className="text-slate-500">ไม่พบห้องที่ค้นหา</p>}
+          {qq && !matches.length && !building && <p className="text-stone-500">ไม่พบห้องที่ค้นหา</p>}
         </aside>
       </div>
     </div>

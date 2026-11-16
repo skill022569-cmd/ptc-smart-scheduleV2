@@ -1,19 +1,38 @@
 @import "tailwindcss";
 
+/* Phon Thong college colors: maroon (brand) from the seal, gold for highlights, silver-grey background. */
 @theme inline {
   --font-sans: var(--font-thai), ui-sans-serif, system-ui, sans-serif;
 }
+@theme {
+  --color-brand-50: #fbf3f3;
+  --color-brand-100: #f5e1e1;
+  --color-brand-200: #ebc2c3;
+  --color-brand-300: #db9597;
+  --color-brand-400: #c3606a;
+  --color-brand-500: #a33a45;
+  --color-brand-600: #7f1d26;
+  --color-brand-700: #6b1720;
+  --color-brand-800: #57131a;
+  --color-brand-900: #430f14;
+  --color-gold-100: #f8efd2;
+  --color-gold-300: #e8cf7c;
+  --color-gold-400: #d9b44a;
+  --color-gold-500: #c39a2b;
+  --color-gold-700: #8a6a14;
+}
 
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: #f4f3f1;
+  color: #1f1a1b;
 }
 
 @layer components {
-  .card { @apply rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200; }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-50; }
-  .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-100 disabled:opacity-50; }
-  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-2 font-medium text-white hover:bg-rose-700 disabled:opacity-50; }
-  .input { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200; }
-  .label { @apply mb-1 block text-sm font-medium text-slate-600; }
+  .card { @apply rounded-xl bg-white p-5 shadow-sm ring-1 ring-stone-200; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2 font-semibold text-white shadow-sm hover:bg-brand-700 disabled:opacity-50; }
+  .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50 disabled:opacity-50; }
+  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-rose-700 px-4 py-2 font-semibold text-white hover:bg-rose-800 disabled:opacity-50; }
+  .input { @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200; }
+  .label { @apply mb-1 block text-sm font-medium text-stone-600; }
+  .section-title { @apply flex items-center gap-2 text-lg font-bold text-brand-800 before:h-5 before:w-1 before:rounded before:bg-gold-500; }
 }

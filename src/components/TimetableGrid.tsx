@@ -29,8 +29,8 @@ const TimetableGrid = forwardRef<HTMLDivElement, Props>(function TimetableGrid(
         <div className="grid gap-1.5" style={{ gridTemplateColumns: `72px repeat(${PERIODS.length}, minmax(0, 1fr))` }}>
           <div />
           {PERIODS.map((p) => (
-            <div key={p.id} className="text-center text-xs text-slate-500">
-              <div className="font-bold text-slate-700">คาบ {p.id}</div>{p.start}-{p.end}
+            <div key={p.id} className="text-center text-xs text-stone-500">
+              <div className="font-bold text-stone-700">คาบ {p.id}</div>{p.start}-{p.end}
             </div>
           ))}
           {DAYS.map((d) => {
@@ -48,11 +48,11 @@ const TimetableGrid = forwardRef<HTMLDivElement, Props>(function TimetableGrid(
                     style={{ background: theme.card, borderLeft: `4px solid ${clash ? "#e11d48" : theme.accent}` }}
                   >
                     <div className="font-bold" style={{ color: theme.accent }}>{b.subject_id}</div>
-                    <div className="line-clamp-2 font-medium text-slate-800">{b.subject_name}</div>
-                    {show !== "group" && <div className="text-slate-500">👩‍🏫 {b.teacher_name}</div>}
-                    {show !== "teacher" && <div className="text-slate-500">👥 {b.group_name}</div>}
+                    <div className="line-clamp-2 font-medium text-stone-800">{b.subject_name}</div>
+                    {show !== "group" && <div className="text-stone-500">👩‍🏫 {b.teacher_name}</div>}
+                    {show !== "teacher" && <div className="text-stone-500">👥 {b.group_name}</div>}
                     <Link href={`/map?room=${encodeURIComponent(b.room_id)}`} onClick={(e) => e.stopPropagation()}
-                      className="mt-1 inline-block rounded bg-slate-100 px-1.5 text-slate-700 hover:bg-indigo-100">📍 {b.room_id}</Link>
+                      className="mt-1 inline-block rounded bg-stone-100 px-1.5 text-stone-700 hover:bg-brand-100">📍 {b.room_id}</Link>
                     {clash && <div className="mt-1 font-bold text-rose-600">⚠ ชนกับเวลาที่แจ้งไม่สะดวก</div>}
                   </div>
                 );
@@ -69,8 +69,8 @@ const TimetableGrid = forwardRef<HTMLDivElement, Props>(function TimetableGrid(
                   <div
                     onClick={() => !lunch && onCellClick?.(d.id, p)}
                     className={`flex h-full min-h-24 items-center justify-center rounded-xl text-xs ${
-                      lunch ? "bg-amber-50 text-amber-600" : isBlocked ? "bg-rose-100 text-rose-600" : "bg-white/50 text-slate-300"
-                    } ${onCellClick && !lunch ? "cursor-pointer hover:ring-2 hover:ring-indigo-300" : ""}`}
+                      lunch ? "bg-amber-50 text-amber-600" : isBlocked ? "bg-rose-100 text-rose-600" : "bg-white/50 text-stone-300"
+                    } ${onCellClick && !lunch ? "cursor-pointer hover:ring-2 hover:ring-brand-300" : ""}`}
                   >
                     {lunch ? "พักเที่ยง" : isBlocked ? "ไม่สะดวก" : ""}
                   </div>

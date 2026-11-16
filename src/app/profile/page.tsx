@@ -25,13 +25,13 @@ export default async function Profile() {
     <div className="grid gap-4 md:grid-cols-2">
       <section className="card space-y-2">
         <h1 className="text-xl font-bold">👤 โปรไฟล์</h1>
-        <p><span className="text-slate-500">ชื่อผู้ใช้:</span> {s.username}</p>
-        <p><span className="text-slate-500">ชื่อ:</span> {student?.full_name ?? teacher?.full_name ?? "-"}</p>
-        <p><span className="text-slate-500">สถานะ:</span> {ROLE_TH[s.role]}</p>
-        {student && <p><span className="text-slate-500">กลุ่มเรียน:</span> {student.group_name}</p>}
-        {teacher && <p><span className="text-slate-500">แผนก:</span> {teacher.department}</p>}
-        <p><span className="text-slate-500">อีเมล:</span> {maskEmail(u.email)}</p>
-        <p className="text-sm text-slate-500">ยอมรับนโยบาย PDPA ฉบับ {u.pdpa_version} เมื่อ {u.consent_at}</p>
+        <p><span className="text-stone-500">ชื่อผู้ใช้:</span> {s.username}</p>
+        <p><span className="text-stone-500">ชื่อ:</span> {student?.full_name ?? teacher?.full_name ?? "-"}</p>
+        <p><span className="text-stone-500">สถานะ:</span> {ROLE_TH[s.role]}</p>
+        {student && <p><span className="text-stone-500">กลุ่มเรียน:</span> {student.group_name}</p>}
+        {teacher && <p><span className="text-stone-500">แผนก:</span> {teacher.department}</p>}
+        <p><span className="text-stone-500">อีเมล:</span> {maskEmail(u.email)}</p>
+        <p className="text-sm text-stone-500">ยอมรับนโยบาย PDPA ฉบับ {u.pdpa_version} เมื่อ {u.consent_at}</p>
         <a href="/api/auth/logout" className="btn-ghost mt-2">ออกจากระบบ</a>
       </section>
       <ProfileActions canDelete={s.role !== "admin"} />
@@ -39,14 +39,14 @@ export default async function Profile() {
         <h2 className="mb-3 font-bold">🕘 ประวัติการเข้าใช้งาน (20 รายการล่าสุด)</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="text-slate-500"><tr><th className="py-1">เวลา</th><th>เหตุการณ์</th><th>IP</th><th>อุปกรณ์</th></tr></thead>
+            <thead className="text-stone-500"><tr><th className="py-1">เวลา</th><th>เหตุการณ์</th><th>IP</th><th>อุปกรณ์</th></tr></thead>
             <tbody>
               {history.map((h, i) => (
                 <tr key={i} className={`border-t ${h.event === "SUSPICIOUS_LOGIN" || h.event === "ACCOUNT_LOCKED" ? "bg-rose-50" : ""}`}>
                   <td className="whitespace-nowrap py-1 pr-3">{h.created_at}</td>
                   <td className="pr-3">{EVENT_TH[h.event] ?? h.event}</td>
                   <td className="pr-3">{h.ip}</td>
-                  <td className="max-w-xs truncate text-slate-500">{h.user_agent}</td>
+                  <td className="max-w-xs truncate text-stone-500">{h.user_agent}</td>
                 </tr>
               ))}
             </tbody>

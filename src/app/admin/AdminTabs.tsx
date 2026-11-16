@@ -19,7 +19,7 @@ export default function AdminTabs({ groups }: { groups: { id: string; name: stri
       <div role="tablist" className="flex gap-2 overflow-x-auto">
         {TABS.map(([id, label]) => (
           <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
-            className={`shrink-0 rounded-xl px-4 py-2 font-medium ${tab === id ? "bg-indigo-600 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200"}`}>
+            className={`shrink-0 rounded-xl px-4 py-2 font-medium ${tab === id ? "bg-brand-600 text-white" : "bg-white text-stone-700 ring-1 ring-stone-200"}`}>
             {label}
           </button>
         ))}

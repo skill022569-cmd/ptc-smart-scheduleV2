@@ -46,7 +46,7 @@ export default function MasterData() {
       <div className="flex flex-wrap gap-2">
         {Object.entries(ENTITIES).map(([k, v]) => (
           <button key={k} onClick={() => setEntity(k)}
-            className={`rounded-lg px-3 py-1.5 text-sm ${k === entity ? "bg-slate-800 text-white" : "bg-white ring-1 ring-slate-200"}`}>{v.label}</button>
+            className={`rounded-lg px-3 py-1.5 text-sm ${k === entity ? "bg-stone-800 text-white" : "bg-white ring-1 ring-stone-200"}`}>{v.label}</button>
         ))}
       </div>
       <form onSubmit={save} className="card grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -76,15 +76,15 @@ export default function MasterData() {
             </label>
           )}
         </div>
-        {entity === "students" && <p className="text-xs text-slate-500 sm:col-span-2 lg:col-span-3">CSV หัวตาราง: student_id,full_name,department,year_level,group_id</p>}
-        {entity === "teachers" && <p className="text-xs text-slate-500 sm:col-span-2 lg:col-span-3">เวลาที่ไม่สะดวกสอน ครูแจ้งเองในหน้า ตารางสอน · สร้างบัญชีเข้าระบบให้ครูได้ที่แท็บ บัญชีผู้ใช้</p>}
+        {entity === "students" && <p className="text-xs text-stone-500 sm:col-span-2 lg:col-span-3">CSV หัวตาราง: student_id,full_name,department,year_level,group_id</p>}
+        {entity === "teachers" && <p className="text-xs text-stone-500 sm:col-span-2 lg:col-span-3">เวลาที่ไม่สะดวกสอน ครูแจ้งเองในหน้า ตารางสอน · สร้างบัญชีเข้าระบบให้ครูได้ที่แท็บ บัญชีผู้ใช้</p>}
         {msg && <p role="status" className={`rounded-xl p-3 text-sm sm:col-span-2 lg:col-span-3 ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>{msg.text}</p>}
       </form>
       <div className="card">
         <input className="input mb-3 max-w-sm" placeholder="กรองข้อมูล..." aria-label="กรองข้อมูล" value={filter} onChange={(ev) => setFilter(ev.target.value)} />
         <div className="max-h-[32rem] overflow-auto">
           <table className="w-full text-left text-sm">
-            <thead className="sticky top-0 bg-white text-slate-500">
+            <thead className="sticky top-0 bg-white text-stone-500">
               <tr>{e.fields.map((f) => <th key={f.key} className="py-2 pr-3">{f.label}</th>)}<th /></tr>
             </thead>
             <tbody>
@@ -92,14 +92,14 @@ export default function MasterData() {
                 <tr key={String(r[e.pk])} className="border-t">
                   {e.fields.map((f) => <td key={f.key} className="max-w-xs truncate py-1.5 pr-3">{r[f.key] ?? "-"}</td>)}
                   <td className="whitespace-nowrap text-right">
-                    <button className="px-2 text-indigo-600" onClick={() => { setForm(r); setEditId(String(r[e.pk])); window.scrollTo({ top: 0, behavior: "smooth" }); }}>แก้ไข</button>
+                    <button className="px-2 text-brand-600" onClick={() => { setForm(r); setEditId(String(r[e.pk])); window.scrollTo({ top: 0, behavior: "smooth" }); }}>แก้ไข</button>
                     <button className="px-2 text-rose-600" onClick={() => remove(r)}>ลบ</button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="mt-2 text-xs text-slate-400">{shown.length} รายการ</p>
+          <p className="mt-2 text-xs text-stone-400">{shown.length} รายการ</p>
         </div>
       </div>
     </div>

@@ -16,7 +16,7 @@ function Draggable({ id, children }: { id: string; children: React.ReactNode }) 
 }
 function Droppable({ id, children }: { id: string; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id });
-  return <div ref={setNodeRef} className={`h-full rounded-xl ${isOver ? "ring-2 ring-indigo-500" : ""}`}>{children}</div>;
+  return <div ref={setNodeRef} className={`h-full rounded-xl ${isOver ? "ring-2 ring-brand-500" : ""}`}>{children}</div>;
 }
 
 export default function Canvas({ groups }: { groups: { id: string; name: string }[] }) {
@@ -50,7 +50,7 @@ export default function Canvas({ groups }: { groups: { id: string; name: string 
             {groups.map((g) => <option key={g.id} value={g.id}>{g.id} · {g.name}</option>)}
           </select>
         </label>
-        <span className="text-sm text-slate-500">ลากการ์ดวิชาไปวางในช่องว่าง ระบบตรวจครู/ห้อง/กลุ่มชนกันทันทีด้วย Transaction บน TiDB</span>
+        <span className="text-sm text-stone-500">ลากการ์ดวิชาไปวางในช่องว่าง ระบบตรวจครู/ห้อง/กลุ่มชนกันทันทีด้วย Transaction บน TiDB</span>
       </div>
       {msg && <p role="status" className={`rounded-xl p-3 text-sm ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>{msg.text}</p>}
       <DndContext sensors={sensors} onDragEnd={onDragEnd}>
