@@ -20,17 +20,12 @@ function makePool(url: string | undefined) {
   });
 }
 
-const g = globalThis as unknown as { _pool?: mysql.Pool; _roPool?: mysql.Pool };
+const g = globalThis as unknown as { _pool?: mysql.Pool };
 
 export function pool() {
   return (g._pool ??= makePool(process.env.DATABASE_URL));
 }
 
-// Read-only account for AI text-to-SQL (falls back to the main pool if not configured).
-export function readOnlyPool() {
-  if (!process.env.DATABASE_READONLY_URL) return pool();
-  return (g._roPool ??= makePool(process.env.DATABASE_READONLY_URL));
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function q<T = any>(sql: string, params: unknown[] = []): Promise<T[]> {

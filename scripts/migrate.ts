@@ -43,19 +43,17 @@ async function main() {
         )`,
   );
 
+  // Timetable sentences for vector Q&A live next to manual documents (see syncTimetableDocs).
+  await c.query(`ALTER TABLE kb_docs
+    ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'manual',
+    ADD COLUMN IF NOT EXISTS group_id VARCHAR(20) NULL,
+    ADD COLUMN IF NOT EXISTS teacher_id VARCHAR(20) NULL,
+    ADD COLUMN IF NOT EXISTS day_of_week TINYINT NULL`);
+
   if (process.env.TIDB_TIFLASH === "true") {
     for (const t of ["students", "timetable"]) await c.query(`ALTER TABLE ${t} SET TIFLASH REPLICA 1`);
   }
 
-  // Read-only account used by AI text-to-SQL: can only SELECT non-personal tables.
-  const roPass = process.env.READONLY_DB_PASSWORD;
-  if (roPass) {
-    const roUser = process.env.READONLY_DB_USER ?? "ptc_readonly";
-    await c.query(`CREATE USER IF NOT EXISTS ?@'%' IDENTIFIED BY ?`, [roUser, roPass]);
-    for (const t of ["timetable", "subjects", "teachers", "classrooms", "student_groups"]) {
-      await c.query(`GRANT SELECT ON \`${dbName}\`.${t} TO ?@'%'`, [roUser]);
-    }
-  }
 
   console.log(`✓ migrated database ${dbName}${AUTO_EMBED ? " (auto-embedding on)" : ""}`);
   await c.end();

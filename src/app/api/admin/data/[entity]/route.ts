@@ -36,7 +36,7 @@ export async function GET(_: Request, ctx: Ctx) {
   const g = await guard(ctx);
   if (!g) return deny();
   const cols = [g.e.pk, ...g.e.fields.map((f) => f.key)].filter((v, i, a) => a.indexOf(v) === i);
-  return NextResponse.json(await q(`SELECT ${cols.join(",")} FROM ${g.e.table} ORDER BY ${g.e.order} LIMIT 5000`));
+  return NextResponse.json(await q(`SELECT ${cols.join(",")} FROM ${g.e.table} ${g.e.where ? `WHERE ${g.e.where}` : ""} ORDER BY ${g.e.order} LIMIT 5000`));
 }
 
 export async function POST(req: Request, ctx: Ctx) {

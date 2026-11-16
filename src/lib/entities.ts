@@ -1,6 +1,6 @@
 // Master-data tables editable by admins. Columns are a whitelist: nothing else can be read or written.
 export type Field = { key: string; label: string; type?: "number" | "text" | "textarea" | "select"; options?: string[]; required?: boolean };
-export type Entity = { table: string; label: string; pk: string; autoPk?: boolean; fields: Field[]; order: string };
+export type Entity = { table: string; label: string; pk: string; autoPk?: boolean; fields: Field[]; order: string; where?: string };
 
 const DEPT = { key: "department", label: "แผนก" };
 
@@ -56,7 +56,8 @@ export const ENTITIES: Record<string, Entity> = {
     fields: [{ key: "title", label: "หัวข้อ", required: true }, { key: "body", label: "เนื้อหา", type: "textarea", required: true }],
   },
   kb_docs: {
-    table: "kb_docs", label: "ฐานความรู้ AI", pk: "id", autoPk: true, order: "title",
+    // Timetable sentences are generated automatically; only hand-written documents are editable here.
+    table: "kb_docs", label: "ฐานความรู้ AI", pk: "id", autoPk: true, order: "title", where: "source='manual'",
     fields: [
       { key: "title", label: "หัวข้อ", required: true }, { key: "content", label: "เนื้อหา", type: "textarea", required: true },
       { key: "action_url", label: "ลิงก์ปุ่ม (เช่น /map?q=AUTO)" },

@@ -4,12 +4,12 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import type { Action } from "@/lib/ai";
 
-type Msg = { from: "me" | "ai"; text: string; actions?: Action[]; sql?: string; error?: boolean };
+type Msg = { from: "me" | "ai"; text: string; actions?: Action[]; error?: boolean };
 
 const EXAMPLES = {
   student: ["วันนี้ฉันเรียนที่ไหนบ้าง", "เกณฑ์การติด ร. เป็นอย่างไร?", "แผนกช่างกลอยู่ตึกไหน?"],
-  teacher: ["วันพุธฉันสอนกี่คาบ", "ครูสมศรีสอนวิชาอะไรบ้าง?", "วิธีขอเปลี่ยนกลุ่มเรียน"],
-  admin: ["วันนี้ ปวช.2 ช่างไฟฟ้า เรียนที่ไหน?", "ห้อง AUTO-101 ว่างวันไหนบ้าง", "ครูคนไหนสอนเกิน 20 ชั่วโมง"],
+  teacher: ["วันพุธฉันสอนที่ไหน", "ครูสมศรีสอนวิชาอะไรบ้าง?", "วิธีขอเปลี่ยนกลุ่มเรียน"],
+  admin: ["วันนี้ ปวช.2 ช่างไฟฟ้า เรียนที่ไหน?", "ห้อง AUTO-101 ใช้เรียนวิชาอะไร", "เกณฑ์การติด ร. เป็นอย่างไร?"],
 };
 
 export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
@@ -24,7 +24,7 @@ export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
     setBusy(true);
     try {
       const r = await api("/api/chat", "POST", { question });
-      setMsgs((m) => [...m, { from: "ai", text: r.answer, actions: r.actions, sql: r.sql }]);
+      setMsgs((m) => [...m, { from: "ai", text: r.answer, actions: r.actions }]);
     } catch (e) {
       setMsgs((m) => [...m, { from: "ai", text: (e as Error).message, error: true }]);
     } finally { setBusy(false); }
@@ -34,7 +34,7 @@ export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <div>
         <h1 className="text-2xl font-bold">🤖 ผู้ช่วย AI ฝ่ายวิชาการ</h1>
-        <p className="text-slate-500">ถามเรื่องตารางเรียน ห้องเรียน ครูผู้สอน หรือระเบียบของวิทยาลัย — คำตอบดึงจากฐานข้อมูลจริงล่าสุด</p>
+        <p className="text-slate-500">ถามเรื่องตารางเรียน ห้องเรียน ครูผู้สอน หรือระเบียบของวิทยาลัย — ค้นจากฐานข้อมูลจริงล่าสุดด้วย TiDB Vector Search</p>
       </div>
       <div className="card min-h-80 space-y-3" aria-live="polite">
         {!msgs.length && (
@@ -54,7 +54,6 @@ export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
                   {m.actions.map((a) => <Link key={a.href} href={a.href} className="rounded-lg bg-white px-3 py-1 text-sm text-indigo-700 ring-1 ring-indigo-200">{a.label}</Link>)}
                 </div>
               )}
-              {m.sql && <details className="mt-2 text-xs text-slate-500"><summary>SQL ที่ใช้ค้น (เฉพาะแอดมิน)</summary><code className="block whitespace-pre-wrap">{m.sql}</code></details>}
             </div>
           </div>
         ))}

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { tx } from "@/lib/db";
 import { apiUser, audit } from "@/lib/auth";
 import { DAYS, PERIODS, LUNCH_PERIOD, TERM } from "@/lib/config";
-import { parseJson } from "@/lib/timetable";
+import { parseJson, syncTimetableDocs } from "@/lib/timetable";
 
 const Body = z.object({ ids: z.array(z.string().regex(/^\d+$/)).min(1).max(10), day: z.number().int(), start: z.number().int() });
 
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   if (start <= LUNCH_PERIOD && end >= LUNCH_PERIOD) return NextResponse.json({ error: "วางคร่อมคาบพักเที่ยงไม่ได้" }, { status: 400 });
 
   try {
-    const warning = await tx(async (c) => {
+    const { warning, group } = await tx(async (c) => {
       const [moving] = (await c.query(
         `SELECT schedule_id, period_slot, teacher_id, room_id, group_id FROM timetable
           WHERE schedule_id IN (?) AND academic_year=? AND semester=? ORDER BY period_slot FOR UPDATE`,
@@ -51,8 +51,12 @@ export async function POST(req: Request) {
       const [[t]] = (await c.query("SELECT unavailable_slots FROM teachers WHERE teacher_id=?", [teacher_id])) as unknown as [{ unavailable_slots: unknown }[]];
       const blocked = parseJson<{ day: number; period: number }[]>(t?.unavailable_slots, [])
         .some((u) => u.day === day && u.period >= start && u.period <= end);
-      return blocked ? `ย้ายแล้ว แต่ครู ${teacher_id} แจ้งว่าไม่สะดวกในช่วงนี้ (ระบบแจ้งเตือนครูแล้ว)` : null;
+      return {
+        group: group_id,
+        warning: blocked ? `ย้ายแล้ว แต่ครู ${teacher_id} แจ้งว่าไม่สะดวกในช่วงนี้ (ระบบแจ้งเตือนครูแล้ว)` : null,
+      };
     });
+    await syncTimetableDocs(group);
     await audit(s.uid, "TIMETABLE_MOVE", { ids, day, start });
     return NextResponse.json({ ok: true, warning });
   } catch (err) {

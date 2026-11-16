@@ -41,14 +41,13 @@ const bad = schedule([off("G3", "X", "T9", 0, 3, "บัญชี", "Lab")], roo
 assert.equal(bad.unplaced.length, 1);
 console.log("✓ scheduler tests passed");
 
-// AI text-to-SQL guard.
-import { safeSql } from "../src/lib/sqlguard";
-assert.ok(safeSql("SELECT * FROM timetable WHERE group_id='ELEC-C2';"));
-assert.ok(safeSql("select t.room_id from timetable t join student_groups g using (group_id)"));
-for (const bad of [
-  "DELETE FROM timetable", "SELECT 1; DROP TABLE users", "SELECT * FROM users", "SELECT password_hash FROM `users`",
-  "SELECT * FROM students", "SELECT * FROM information_schema.tables", "SELECT SLEEP(10)", "SELECT 1 -- x",
-  "SELECT * FROM timetable FOR UPDATE", "WITH x AS (SELECT 1) DELETE FROM timetable", "SELECT @@version",
-  "SELECT * FROM timetable INTO OUTFILE '/tmp/x'", "SELECT * FROM mysql.user",
-]) assert.equal(safeSql(bad), null, bad);
-console.log("✓ sql guard tests passed");
+// Day detection for vector Q&A filters (today = Monday = 1).
+import { askedDay } from "../src/lib/day";
+assert.equal(askedDay("วันนี้ ปวช.2 ช่างไฟฟ้า เรียนที่ไหน?", 1), 1);
+assert.equal(askedDay("พรุ่งนี้เรียนอะไร", 5), 6);
+assert.equal(askedDay("วันพฤหัสบดีครูสมศรีสอนที่ไหน", 1), 4);
+assert.equal(askedDay("วันพุธฉันสอนที่ไหน", 1), 3);
+assert.equal(askedDay("เกณฑ์การติด ร.", 1), null);
+assert.equal(askedDay("วันเสาร์เรียนไหม", 1), 6);
+assert.equal(askedDay("วันอาทิตย์มีเรียนไหม", 1), 0);
+console.log("✓ day parsing tests passed");

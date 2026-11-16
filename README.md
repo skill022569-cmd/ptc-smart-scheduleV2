@@ -1,6 +1,6 @@
 # PTC Smart Schedule — ระบบจัดตารางเรียน-ตารางสอน วิทยาลัยการอาชีพโพนทอง
 
-Next.js (Vercel) + TiDB Cloud + Claude AI
+Next.js (Vercel) + TiDB Cloud (Vector Search)
 
 | ส่วน | สิ่งที่ทำได้ |
 |---|---|
@@ -10,7 +10,7 @@ Next.js (Vercel) + TiDB Cloud + Claude AI
 | 👩‍🏫 ครู | ตารางสอน + รายชื่อนักเรียน · ล็อกเวลาไม่สะดวกสอน (JSON array) · แถบเตือนสีแดงเมื่อคาบมาชนเวลาที่ล็อก (เช็กทุก 30 วินาที) |
 | ⚙️ ฝ่ายวิชาการ | ข้อมูลหลัก (วิชา ครู ห้อง กลุ่ม หลักสูตร นักเรียน + นำเข้า CSV ประกาศ ฐานความรู้ AI) · **AI จัดตารางทั้งวิทยาลัย** · ลากวางปรับตาราง (Transaction + Unique Key กันชน 100%) · จุดกู้คืน (snapshot ก่อนรัน AI) · ส่งออก CSV/Excel · จัดการบัญชี/ปลดล็อก |
 | 🗺️ แผนที่ | ค้นหาห้อง/อาคาร/แผนก ไฮไลต์ตำแหน่ง · แอดมินคลิกปักหมุดห้องบนแผนที่ |
-| 🤖 ถาม AI | Intent Router → **Text-to-SQL** (SELECT อย่างเดียว ผ่านตัวกรอง + บัญชีอ่านอย่างเดียว + TiDB stale-read transaction) หรือ **RAG ด้วย TiDB Vector Search** (`EMBED_TEXT`, ไม่ต้องใช้ key embedding) → Claude เรียบเรียงคำตอบภาษาไทย พร้อมปุ่ม [ดูตำแหน่งห้องบนแผนที่] |
+| 🤖 ถาม AI | **TiDB Vector Search ล้วน ไม่มีค่าใช้จ่าย**: ตารางเรียนทุกคาบถูกแปลงเป็นประโยคภาษาไทยเก็บใน `kb_docs` (อัปเดตอัตโนมัติทุกครั้งที่รัน AI/ย้อนเวอร์ชัน/ลากย้าย) รวมกับเอกสารระเบียบ · TiDB แปลงคำถามเป็นเวกเตอร์ด้วย `EMBED_TEXT` แล้วค้นด้วย `VEC_EMBED_COSINE_DISTANCE` · กรองวัน ("วันนี้", "พรุ่งนี้", ชื่อวัน) และ "ตารางของฉัน" ก่อนจัดอันดับ · แนบปุ่ม [ดูตำแหน่งห้องบนแผนที่] |
 
 ตัวจัดตาราง (`src/lib/scheduler.ts`): ห้อง/ครู/กลุ่มไม่ชนกัน · วิชาปฏิบัติใช้ห้องตรงประเภทและแผนก · วิชาปฏิบัติเรียนต่อเนื่องเป็นบล็อก · ไม่คร่อมพักเที่ยง (คาบ 5) · เคารพเวลาที่ครูล็อก · ไม่เกินชั่วโมงสอนสูงสุด · กระจายภาระตลอดสัปดาห์ · วิชาที่วางไม่ได้จะแจ้งพร้อมเหตุผล
 
@@ -53,10 +53,9 @@ npm run db:seed -- --yes
 |---|---|
 | `DATABASE_URL` | `mysql://<prefix>.root:<pass>@<host>:4000/ptc_schedule` |
 | `SESSION_SECRET` | สุ่มยาว ≥ 32 ตัว (`openssl rand -base64 48`) |
-| `ANTHROPIC_API_KEY` | key จาก <https://console.anthropic.com> (ใช้กับหน้า ถาม AI) |
-| `SMTP_*` | Gmail: เปิด 2-Step Verification → สร้าง App Password · ภายหลังเปลี่ยนเป็น SMTP ของ @ptc.ac.th ได้โดยแก้แค่ env |
-| `TIDB_AUTO_EMBEDDING` | `true` บน TiDB Cloud Starter (AWS) — ถ้าไม่เปิด ระบบส่งฐานความรู้ทั้งหมดให้ AI แทนการค้นแบบเวกเตอร์ |
-| `DATABASE_READONLY_URL` | บัญชีอ่านอย่างเดียวที่ `db:migrate` สร้างให้ (ต้องตั้ง `READONLY_DB_USER/PASSWORD` ก่อน migrate) |
+| `SMTP_*` | SMTP สำหรับส่ง OTP เช่น Brevo (`smtp-relay.brevo.com:587`) · `SMTP_FROM` ต้องเป็นอีเมลผู้ส่งที่ยืนยันแล้ว |
+| `TIDB_AUTO_EMBEDDING` | `true` บน TiDB Cloud Starter (AWS) — ถ้าไม่เปิด (เช่น dev ในเครื่อง) ระบบค้นแบบเทียบตัวอักษรแทน |
+| `SKIP_OTP_USERNAMES` | ชั่วคราว: ชื่อผู้ใช้ที่ข้าม OTP เช่น `admin` — ลบออกก่อนใช้งานจริง |
 
 ---
 
@@ -73,7 +72,7 @@ SESSION_SECRET=dev-only-secret-change-me-0123456789abcdef
 ```bash
 npm run db:migrate && npm run db:seed -- --yes && npm run dev
 ```
-ถ้าไม่ได้ตั้ง SMTP ในโหมด dev รหัส OTP จะแสดงในเทอร์มินัล (`[DEV MAIL]`) · ทดสอบตัวจัดตาราง + ตัวกรอง SQL: `npm test`
+ถ้าไม่ได้ตั้ง SMTP ในโหมด dev รหัส OTP จะแสดงในเทอร์มินัล (`[DEV MAIL]`) · ทดสอบ: `npm test` · สร้างดัชนีถาม-ตอบใหม่: `npm run db:sync-qa`
 
 ## 🗂️ โครงสร้าง
 ```
@@ -82,7 +81,7 @@ scripts/migrate.ts       สร้างตาราง + kb_docs (vector) + TiF
 scripts/seed.ts          ข้อมูลจำลอง + บัญชีทดสอบ
 src/lib/scheduler.ts     AI Auto-Scheduler (pure function, มี unit test)
 src/lib/timetable.ts     รัน/บันทึกตาราง, snapshot, ย้อนกลับ
-src/lib/ai.ts            Router → Text-to-SQL / Vector RAG → Synthesizer (Claude)
+src/lib/ai.ts            ถาม-ตอบด้วย TiDB Vector Search (ประโยคตารางสร้างใน timetable.ts → syncTimetableDocs)
 src/lib/auth.ts, login.ts  session, OTP, lockout, alerts
 src/app/…                หน้าเว็บ + API
 public/campus-map.svg    แผนผังจำลอง — แทนด้วยภาพจริงแล้วปักหมุดใหม่ที่หน้าแผนที่
