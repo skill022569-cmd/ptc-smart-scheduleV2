@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS otp_logs (
   used BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_otp_user (user_id, created_at)
-) TTL = created_at + INTERVAL 5 MINUTE TTL_JOB_INTERVAL = '5m';
+) TTL = created_at + INTERVAL 5 MINUTE;
 
 -- Security audit trail, kept 1 year then removed by TTL.
 CREATE TABLE IF NOT EXISTS audit_logs (
