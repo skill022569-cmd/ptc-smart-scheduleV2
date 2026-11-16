@@ -1,0 +1,12 @@
+// Client-side JSON fetch that throws the server's Thai error message.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function api<T = any>(url: string, method = "GET", body?: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method,
+    headers: body ? { "content-type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error ?? `เกิดข้อผิดพลาด (${res.status})`);
+  return data as T;
+}

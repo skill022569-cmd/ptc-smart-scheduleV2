@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700">
+<rect width="1000" height="700" fill="#ecfdf5"/>
+<path d="M0 360 H1000 M500 0 V700" stroke="#d1d5db" stroke-width="28"/>
+<rect x="320" y="640" width="360" height="60" fill="#d1d5db"/><text x="500" y="680" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#374151">ประตูทางเข้า</text>
+<g><rect x="400" y="56" width="220" height="84" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="510" y="106" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">อาคารอำนวยการ</text></g>
+<g><rect x="80" y="210" width="220" height="98" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="190" y="267" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">อาคารเรียนรวม 1</text></g>
+<g><rect x="700" y="210" width="220" height="98" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="810" y="267" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">อาคารเรียนรวม 2</text></g>
+<g><rect x="80" y="406" width="180" height="98" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="170" y="463" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">อาคารช่างยนต์</text></g>
+<g><rect x="300" y="406" width="180" height="98" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="390" y="463" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">อาคารช่างไฟฟ้ากำลัง</text></g>
+<g><rect x="520" y="406" width="180" height="98" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="610" y="463" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">อาคารช่างอิเล็กทรอนิกส์</text></g>
+<g><rect x="740" y="406" width="180" height="98" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="830" y="463" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">อาคารช่างกลโรงงาน</text></g>
+<g><rect x="360" y="238" width="260" height="84" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="490" y="288" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">อาคารพาณิชยกรรม</text></g>
+<g><rect x="400" y="574" width="180" height="70" rx="12" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/><text x="490" y="617" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#3730a3">โรงอาหาร</text></g>
+<text x="20" y="690" font-family="sans-serif" font-size="16" fill="#6b7280">แผนผังจำลอง — แทนที่ไฟล์นี้ด้วยแผนที่จริงของวิทยาลัย</text>
+</svg>

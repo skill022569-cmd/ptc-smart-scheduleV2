@@ -1,103 +1,39 @@
-import Image from "next/image";
+import Link from "next/link";
+import { q } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const s = await getSession();
+  const news = await q<{ id: string; title: string; body: string; created_at: string }>(
+    "SELECT id, title, body, created_at FROM announcements ORDER BY created_at DESC LIMIT 10");
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="space-y-6">
+      <section className="rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 p-6 text-white shadow-lg sm:p-10">
+        <h1 className="text-2xl font-bold sm:text-3xl">ตารางเรียน-ตารางสอน วิทยาลัยการอาชีพโพนทอง</h1>
+        <p className="mt-2 text-indigo-100">ดูตารางเรียน หาห้องเรียน และถามคำถามเรื่องการเรียนกับผู้ช่วย AI ได้ในที่เดียว</p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href={s ? "/schedule" : "/login"} className="rounded-xl bg-white px-4 py-2 font-medium text-indigo-700">
+            {s ? "ดูตารางของฉัน" : "เข้าสู่ระบบ"}
+          </Link>
+          <Link href="/map" className="rounded-xl bg-white/15 px-4 py-2 font-medium ring-1 ring-white/40">หาห้องเรียน</Link>
+          <Link href="/assistant" className="rounded-xl bg-white/15 px-4 py-2 font-medium ring-1 ring-white/40">ถาม AI</Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+      <section>
+        <h2 className="mb-3 text-lg font-bold">📢 ประกาศจากฝ่ายวิชาการ</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {news.map((n) => (
+            <article key={n.id} className="card">
+              <h3 className="font-bold">{n.title}</h3>
+              <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{n.body}</p>
+              <p className="mt-2 text-xs text-slate-400">{n.created_at}</p>
+            </article>
+          ))}
+          {!news.length && <p className="text-slate-500">ยังไม่มีประกาศ</p>}
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PTC Smart Schedule — ระบบจัดตารางเรียน-ตารางสอน วิทยาลัยการอาชีพโพนทอง
 
-## Getting Started
+Next.js (Vercel) + TiDB Cloud + Claude AI
 
-First, run the development server:
+| ส่วน | สิ่งที่ทำได้ |
+|---|---|
+| 🔐 เข้าสู่ระบบ | แยกปุ่มนักเรียน/บุคลากร · บุคลากรยืนยัน **OTP 6 หลักทางอีเมล** (เก็บใน `otp_logs` แบบ **TiDB TTL 5 นาที**) · ล็อกบัญชี 15 นาทีเมื่อรหัสผ่าน/OTP ผิด 5 ครั้ง · แจ้งเตือนทางอีเมลเมื่อเข้าจากอุปกรณ์ใหม่ (บันทึก `audit_logs`, TTL 1 ปี) |
+| 🛡️ PDPA | Pop-up ยอมรับนโยบาย (เก็บเวอร์ชัน + เวลา) · ปิดบังอีเมล `te***@…` · ส่งออกข้อมูลตัวเอง (JSON) · ลบบัญชี · TLS ไป TiDB Cloud (Encryption at rest เป็นค่าเริ่มต้นของ TiDB Cloud) |
+| 🎓 นักเรียน | ตารางแบบการ์ด (รหัสวิชา ชื่อวิชา ครู ห้อง) · เปลี่ยนสี (เก็บเป็น JSON ใน `users.ui_theme`) · บันทึกเป็น PNG · รหัสผ่านเริ่มต้น = รหัสนักศึกษา (บังคับเปลี่ยนครั้งแรก) |
+| 👩‍🏫 ครู | ตารางสอน + รายชื่อนักเรียน · ล็อกเวลาไม่สะดวกสอน (JSON array) · แถบเตือนสีแดงเมื่อคาบมาชนเวลาที่ล็อก (เช็กทุก 30 วินาที) |
+| ⚙️ ฝ่ายวิชาการ | ข้อมูลหลัก (วิชา ครู ห้อง กลุ่ม หลักสูตร นักเรียน + นำเข้า CSV ประกาศ ฐานความรู้ AI) · **AI จัดตารางทั้งวิทยาลัย** · ลากวางปรับตาราง (Transaction + Unique Key กันชน 100%) · จุดกู้คืน (snapshot ก่อนรัน AI) · ส่งออก CSV/Excel · จัดการบัญชี/ปลดล็อก |
+| 🗺️ แผนที่ | ค้นหาห้อง/อาคาร/แผนก ไฮไลต์ตำแหน่ง · แอดมินคลิกปักหมุดห้องบนแผนที่ |
+| 🤖 ถาม AI | Intent Router → **Text-to-SQL** (SELECT อย่างเดียว ผ่านตัวกรอง + บัญชีอ่านอย่างเดียว + TiDB stale-read transaction) หรือ **RAG ด้วย TiDB Vector Search** (`EMBED_TEXT`, ไม่ต้องใช้ key embedding) → Claude เรียบเรียงคำตอบภาษาไทย พร้อมปุ่ม [ดูตำแหน่งห้องบนแผนที่] |
 
+ตัวจัดตาราง (`src/lib/scheduler.ts`): ห้อง/ครู/กลุ่มไม่ชนกัน · วิชาปฏิบัติใช้ห้องตรงประเภทและแผนก · วิชาปฏิบัติเรียนต่อเนื่องเป็นบล็อก · ไม่คร่อมพักเที่ยง (คาบ 5) · เคารพเวลาที่ครูล็อก · ไม่เกินชั่วโมงสอนสูงสุด · กระจายภาระตลอดสัปดาห์ · วิชาที่วางไม่ได้จะแจ้งพร้อมเหตุผล
+
+---
+
+## 🚀 Deploy (ทำครั้งเดียว)
+
+### 1) สร้างฐานข้อมูล TiDB Cloud
+1. สมัคร <https://tidbcloud.com> → **Create Cluster → Starter** → Cloud Provider **AWS**, Region **Singapore (ap-southeast-1)**
+   (Auto Embedding/Vector Search แบบฟรีมีเฉพาะ Starter บน AWS)
+2. กด **Connect** → เลือก *Node.js* → **Generate Password** → จดค่า host / user / password
+
+### 2) สร้างตารางและข้อมูลตัวอย่าง (รันจากเครื่องคุณ ต้องมี Node.js 20+)
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/skill022569-cmd/ptc-smart-scheduleV2.git
+```
+```bash
+cd ptc-smart-scheduleV2 && npm install
+```
+```bash
+cp .env.example .env.local
+```
+แก้ `.env.local` ใส่ค่าจริง (อย่างน้อย `DATABASE_URL`, `SESSION_SECRET`, `SEED_ADMIN_EMAIL`, `SEED_TEACHER_EMAIL`) แล้วรัน:
+```bash
+npm run db:migrate
+```
+```bash
+npm run db:seed -- --yes
+```
+คำสั่ง seed **ลบข้อมูลเดิมทั้งหมด** แล้วใส่ข้อมูลจำลอง 6 แผนก/30 กลุ่ม/33 ครู/30 ห้อง พร้อมรัน AI จัดตาราง
+และพิมพ์ **รหัสผ่านบัญชีทดสอบ (admin, teacher, นักเรียน 6921001)** ออกมาครั้งเดียว — จดไว้
+
+### 3) Deploy บน Vercel
+1. <https://vercel.com/new> → Import repo `ptc-smart-scheduleV2` (Framework: Next.js อัตโนมัติ)
+2. **Environment Variables**: คัดลอกทุกค่าจาก `.env.local` (ยกเว้น `SEED_*`)
+3. Deploy — ฟังก์ชันตั้งไว้ที่ region `sin1` (สิงคโปร์) ให้ใกล้ TiDB
+
+### ค่า env สำคัญ
+| ชื่อ | คำอธิบาย |
+|---|---|
+| `DATABASE_URL` | `mysql://<prefix>.root:<pass>@<host>:4000/ptc_schedule` |
+| `SESSION_SECRET` | สุ่มยาว ≥ 32 ตัว (`openssl rand -base64 48`) |
+| `ANTHROPIC_API_KEY` | key จาก <https://console.anthropic.com> (ใช้กับหน้า ถาม AI) |
+| `SMTP_*` | Gmail: เปิด 2-Step Verification → สร้าง App Password · ภายหลังเปลี่ยนเป็น SMTP ของ @ptc.ac.th ได้โดยแก้แค่ env |
+| `TIDB_AUTO_EMBEDDING` | `true` บน TiDB Cloud Starter (AWS) — ถ้าไม่เปิด ระบบส่งฐานความรู้ทั้งหมดให้ AI แทนการค้นแบบเวกเตอร์ |
+| `DATABASE_READONLY_URL` | บัญชีอ่านอย่างเดียวที่ `db:migrate` สร้างให้ (ต้องตั้ง `READONLY_DB_USER/PASSWORD` ก่อน migrate) |
+
+---
+
+## 💻 พัฒนาบนเครื่อง (ไม่ต้องใช้ cloud)
+```bash
+docker run -d --name tidb -p 4000:4000 pingcap/tidb:v8.5.1
+```
+`.env.local`:
+```
+DATABASE_URL=mysql://root:@127.0.0.1:4000/ptc_schedule
+DB_SSL=false
+SESSION_SECRET=dev-only-secret-change-me-0123456789abcdef
+```
+```bash
+npm run db:migrate && npm run db:seed -- --yes && npm run dev
+```
+ถ้าไม่ได้ตั้ง SMTP ในโหมด dev รหัส OTP จะแสดงในเทอร์มินัล (`[DEV MAIL]`) · ทดสอบตัวจัดตาราง + ตัวกรอง SQL: `npm test`
+
+## 🗂️ โครงสร้าง
+```
+db/schema.sql            ตารางทั้งหมด (AUTO_RANDOM, JSON, TTL, Composite Unique Key กันตารางชน)
+scripts/migrate.ts       สร้างตาราง + kb_docs (vector) + TiFlash + บัญชีอ่านอย่างเดียว
+scripts/seed.ts          ข้อมูลจำลอง + บัญชีทดสอบ
+src/lib/scheduler.ts     AI Auto-Scheduler (pure function, มี unit test)
+src/lib/timetable.ts     รัน/บันทึกตาราง, snapshot, ย้อนกลับ
+src/lib/ai.ts            Router → Text-to-SQL / Vector RAG → Synthesizer (Claude)
+src/lib/auth.ts, login.ts  session, OTP, lockout, alerts
+src/app/…                หน้าเว็บ + API
+public/campus-map.svg    แผนผังจำลอง — แทนด้วยภาพจริงแล้วปักหมุดใหม่ที่หน้าแผนที่
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## หมายเหตุ / สิ่งที่ยังไม่ได้ทำในรอบนี้
+- Dashboard กราฟสถิติ (TiFlash) และ Auto-Backup ไป S3/GCS ยังไม่ได้ทำ — TiDB Cloud Starter มี automatic backup + PITR ในหน้า Console อยู่แล้ว
+- ย้อนตารางใช้ snapshot ระดับแอป (ไม่ใช้ `FLASHBACK CLUSTER` ซึ่ง Starter ไม่รองรับ)
+- ปุ่มลบบัญชีของผู้ใช้ไม่ลบ `audit_logs` ทันที (เก็บตามกฎหมาย แล้ว TTL ลบเมื่อครบ 1 ปี)
+- repo นี้เป็น Public: อย่า commit `.env.local` (ถูก `.gitignore` ไว้แล้ว)
