@@ -28,7 +28,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: await registerFailure(u, "password") }, { status: 401 });
   }
 
-  if (u.role === "student") {
+  // shortcut: SKIP_OTP_USERNAMES (comma list, set only in Vercel env) bypasses 2FA while email delivery is being fixed; remove before real use.
+  const skipOtp = (process.env.SKIP_OTP_USERNAMES ?? "").split(",").map((s) => s.trim()).filter(Boolean).includes(u.username);
+  if (u.role === "student" || skipOtp) {
+    if (skipOtp) await audit(u.user_id, "OTP_BYPASSED");
     await finishLogin(u);
     return NextResponse.json({ ok: true });
   }
