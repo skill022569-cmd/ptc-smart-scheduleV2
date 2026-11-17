@@ -35,6 +35,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ ok: true });
   }
   if (body.password) {
+    if (s.actor) return NextResponse.json({ error: "เปลี่ยนรหัสผ่านไม่ได้ระหว่างดูในมุมมองผู้ใช้" }, { status: 403 });
     const [u] = await q<{ password_hash: string }>("SELECT password_hash FROM users WHERE user_id=?", [s.uid]);
     if (!(await bcrypt.compare(body.current ?? "", u.password_hash))) return NextResponse.json({ error: "รหัสผ่านเดิมไม่ถูกต้อง" }, { status: 400 });
     const err = passwordProblem(body.password, s.username);
@@ -50,6 +51,7 @@ export async function PATCH(req: Request) {
 export async function DELETE() {
   const s = await apiUser();
   if (!s) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (s.actor) return NextResponse.json({ error: "ลบบัญชีไม่ได้ระหว่างดูในมุมมองผู้ใช้" }, { status: 403 });
   if (s.role === "admin") return NextResponse.json({ error: "บัญชีผู้ดูแลระบบต้องให้ผู้ดูแลคนอื่นลบให้" }, { status: 400 });
   await audit(s.uid, "ACCOUNT_DELETED");
   await tx(async (c) => {

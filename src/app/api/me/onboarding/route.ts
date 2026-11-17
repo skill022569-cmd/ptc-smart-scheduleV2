@@ -8,6 +8,7 @@ import { passwordProblem } from "@/lib/login";
 export async function POST(req: Request) {
   const s = await getSession();
   if (!s) return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+  if (s.actor) return NextResponse.json({ error: "ยอมรับ PDPA แทนเจ้าของบัญชีไม่ได้" }, { status: 403 });
   const { consent, newPassword } = (await req.json().catch(() => ({}))) as { consent?: boolean; newPassword?: string };
   if (consent !== true) return NextResponse.json({ error: "ต้องยอมรับนโยบายความเป็นส่วนตัวก่อนใช้งาน" }, { status: 400 });
 

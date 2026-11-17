@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 
 const EVENT_TH: Record<string, string> = {
   LOGIN_SUCCESS: "เข้าสู่ระบบสำเร็จ", LOGIN_FAIL: "รหัสผ่านผิด", OTP_SENT: "ส่ง OTP", OTP_FAIL: "OTP ผิด",
-  ACCOUNT_LOCKED: "บัญชีถูกล็อก", SUSPICIOUS_LOGIN: "⚠️ เข้าสู่ระบบจากอุปกรณ์ใหม่", PDPA_CONSENT: "ยอมรับนโยบาย PDPA",
+  ACCOUNT_LOCKED: "บัญชีถูกล็อก", VIEWED_BY_ADMIN: "👁️ แอดมินเปิดดูในมุมมองของบัญชีนี้",
+  IMPERSONATE_START: "เริ่มดูในมุมมองผู้ใช้", IMPERSONATE_STOP: "กลับเป็นแอดมิน", OTP_BYPASSED: "เข้าสู่ระบบโดยข้าม OTP", SUSPICIOUS_LOGIN: "⚠️ เข้าสู่ระบบจากอุปกรณ์ใหม่", PDPA_CONSENT: "ยอมรับนโยบาย PDPA",
   PASSWORD_CHANGED: "เปลี่ยนรหัสผ่าน", DATA_EXPORT: "ส่งออกข้อมูลส่วนตัว",
 };
 const ROLE_TH = { student: "นักเรียน/นักศึกษา", teacher: "ครูผู้สอน", admin: "ฝ่ายวิชาการ/ผู้ดูแลระบบ" };

@@ -30,6 +30,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="th">
       <body className={`${thai.variable} flex min-h-screen flex-col font-sans antialiased`}>
         <header className="sticky top-0 z-30 shadow-sm">
+          {s?.actor && (
+            <div role="status" className="bg-amber-500 text-amber-950">
+              <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5 text-sm">
+                <span>👁️ <b>{s.actor.username}</b> กำลังดูเว็บในมุมมองของ <b>{s.username}</b> ({s.role === "teacher" ? "ครู" : "นักเรียน"})</span>
+                <a href="/api/impersonate" className="ml-auto rounded-md bg-amber-950 px-3 py-0.5 font-semibold text-amber-50 hover:bg-black">กลับเป็นแอดมิน</a>
+              </div>
+            </div>
+          )}
           <div className="border-b-[3px] border-gold-500 bg-brand-700 text-white">
             <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5">
               <Link href="/" className="flex min-w-0 items-center gap-3">

@@ -8,6 +8,7 @@ export default function Users() {
   const [users, setUsers] = useState<U[]>([]);
   const [form, setForm] = useState({ username: "", email: "", role: "teacher", teacher_id: "" });
   const [student, setStudent] = useState("");
+  const [viewAs, setViewAs] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = useCallback(async () => setUsers(await api("/api/admin/users")), []);
@@ -24,6 +25,12 @@ export default function Users() {
       return `สร้างบัญชีแล้ว รหัสผ่านชั่วคราว: ${r.password} (แสดงครั้งเดียว ผู้ใช้ต้องเปลี่ยนเมื่อเข้าครั้งแรก)`;
     });
   };
+  async function startViewAs(username: string) {
+    try {
+      await api("/api/impersonate", "POST", { username });
+      window.location.href = "/schedule"; // full reload so the header and menu switch to that user's view
+    } catch (e) { setMsg({ ok: false, text: (e as Error).message }); }
+  }
   const patch = (body: object, label: string) => run(async () => {
     const r = await api("/api/admin/users", "PATCH", body);
     return r.password ? `${label} รหัสผ่านชั่วคราว: ${r.password} (แสดงครั้งเดียว)` : label;
@@ -42,6 +49,7 @@ export default function Users() {
                 <td>{Number(u.locked) ? <span className="text-rose-600">ถูกล็อก</span> : "ปกติ"}</td>
                 <td className="whitespace-nowrap text-right">
                   {Number(u.locked) ? <button className="px-2 text-brand-600" onClick={() => patch({ id: u.user_id, action: "unlock" }, `ปลดล็อก ${u.username} แล้ว`)}>ปลดล็อก</button> : null}
+                  {u.role !== "admin" && <button className="px-2 text-brand-700" onClick={() => startViewAs(u.username)}>👁️ ดูมุมมอง</button>}
                   <button className="px-2 text-amber-700" onClick={() => confirm(`รีเซ็ตรหัสผ่าน ${u.username}?`) && patch({ id: u.user_id, action: "reset" }, `รีเซ็ต ${u.username} แล้ว`)}>รีเซ็ตรหัสผ่าน</button>
                 </td>
               </tr>
@@ -50,6 +58,17 @@ export default function Users() {
         </table>
       </section>
       <div className="space-y-4">
+        <form className="card space-y-2 ring-amber-300" onSubmit={(e) => { e.preventDefault(); startViewAs(viewAs); }}>
+          <h2 className="font-bold">👁️ ดูเว็บในมุมมองของผู้ใช้</h2>
+          <p className="text-xs text-stone-500">สำหรับทดสอบ: เห็นเว็บเหมือนเจ้าของบัญชีทุกอย่าง (ยกเว้นเปลี่ยนรหัสผ่าน ลบบัญชี และยอมรับ PDPA แทน) · ทุกครั้งถูกบันทึกในประวัติ</p>
+          <input className="input" placeholder="ชื่อผู้ใช้ / รหัสนักศึกษา" aria-label="ชื่อผู้ใช้ที่จะดูมุมมอง" value={viewAs} onChange={(e) => setViewAs(e.target.value)} required />
+          <div className="flex flex-wrap gap-2 text-xs">
+            {["6921001", "6911001", "teacher"].map((u) => (
+              <button key={u} type="button" className="rounded-md bg-stone-100 px-2 py-1 hover:bg-stone-200" onClick={() => startViewAs(u)}>{u}</button>
+            ))}
+          </div>
+          <button className="btn w-full">ดูในมุมมองนี้</button>
+        </form>
         <form onSubmit={create} className="card space-y-2">
           <h2 className="font-bold">➕ สร้างบัญชีครู/แอดมิน</h2>
           <input className="input" placeholder="ชื่อผู้ใช้" aria-label="ชื่อผู้ใช้" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />

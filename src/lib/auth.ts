@@ -6,7 +6,8 @@ import { SignJWT, jwtVerify } from "jose";
 import { q } from "./db";
 
 export type Role = "student" | "teacher" | "admin";
-export type Session = { uid: string; role: Role; username: string };
+// actor = the admin who is viewing the site as this user (impersonation); absent for normal logins.
+export type Session = { uid: string; role: Role; username: string; actor?: { uid: string; username: string } };
 
 const secret = () => {
   const s = process.env.SESSION_SECRET;
@@ -59,7 +60,8 @@ export async function requireUser(roles?: Role[]) {
   const [u] = await q<{ must_change_password: number; pdpa_consent: number }>(
     "SELECT must_change_password, pdpa_consent FROM users WHERE user_id=?", [s.uid]);
   if (!u) redirect("/api/auth/logout");
-  if (u.must_change_password || !u.pdpa_consent) redirect("/onboarding");
+  // An impersonating admin must not set a password or give PDPA consent on the owner's behalf, so skip onboarding.
+  if (!s.actor && (u.must_change_password || !u.pdpa_consent)) redirect("/onboarding");
   if (roles && !roles.includes(s.role)) redirect("/");
   return s;
 }
