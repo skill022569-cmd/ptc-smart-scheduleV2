@@ -51,7 +51,9 @@ export default function Chat({ role, storageKey }: { role: keyof typeof EXAMPLES
     setInput("");
     setBusy(true);
     try {
-      const r = await api("/api/chat", "POST", { question });
+      // Last 3 Q&A pairs (errors excluded) so the AI can follow up on what was just discussed.
+      const history = msgs.filter((m) => !m.error).slice(-6).map((m) => ({ role: m.from === "me" ? "user" : "ai", text: m.text }));
+      const r = await api("/api/chat", "POST", { question, history });
       setMsgs((m) => [...m, { from: "ai", text: r.answer, actions: r.actions, note: r.note }]);
     } catch (e) {
       setMsgs((m) => [...m, { from: "ai", text: (e as Error).message, error: true }]);

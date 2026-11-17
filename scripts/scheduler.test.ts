@@ -57,3 +57,13 @@ assert.equal(expandQuery("ใครคือ หน.งานทะเบีย�
 assert.equal(expandQuery("นักเรียนผอมไหม"), "นักเรียนผอมไหม");
 assert.equal(expandQuery("อ.สมศรีสอนอะไร"), "ครูสมศรีสอนอะไร");
 console.log("✓ abbreviation tests passed");
+import { detectScope } from "../src/lib/query";
+assert.deepEqual(detectScope("คาบแรกเรียนอะไรของช่างกล").departments, ["ช่างกลโรงงาน"]);
+assert.equal(detectScope("วันนี้ ปวช.2 ช่างไฟฟ้า เรียนที่ไหน").level, "ปวช.2");
+assert.deepEqual(detectScope("วันนี้ ปวช.2 ช่างไฟฟ้า เรียนที่ไหน").departments, ["ช่างไฟฟ้ากำลัง"]);
+assert.deepEqual(detectScope("ปวส 1 อิเล็กทรอนิกส์").departments, ["ช่างอิเล็กทรอนิกส์"]);
+assert.equal(detectScope("ปวส 1 อิเล็กทรอนิกส์").level, "ปวส.1");
+assert.deepEqual(detectScope("ห้อง auto-101 กับ B1-106 ใช้เรียนอะไร").rooms, ["AUTO-101", "B1-106"]);
+assert.equal(detectScope("พรุ่งนี้ฉันเรียนอะไร").mine, true);
+assert.deepEqual(detectScope("เกณฑ์การติด ร.").departments, []);
+console.log("✓ scope detection tests passed");
