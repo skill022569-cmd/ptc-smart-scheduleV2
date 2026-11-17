@@ -45,7 +45,7 @@ export default async function Home() {
         <h2 className="section-title mb-3">บริการ</h2>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {SERVICES.map((x) => (
-            <Link key={x.href} href={x.href} className="card group !p-4 transition hover:-transtone-y-0.5 hover:ring-gold-400">
+            <Link key={x.href} href={x.href} className="card group !p-4 transition hover:-translate-y-0.5 hover:ring-gold-400">
               <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-50 text-2xl">{x.icon}</div>
               <div className="mt-3 font-bold text-stone-800 group-hover:text-brand-700">{x.title}</div>
               <div className="text-sm text-stone-500">{x.desc}</div>

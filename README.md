@@ -84,7 +84,7 @@ src/lib/timetable.ts     รัน/บันทึกตาราง, snapshot, 
 src/lib/ai.ts            ถาม-ตอบด้วย TiDB Vector Search (ประโยคตารางสร้างใน timetable.ts → syncTimetableDocs)
 src/lib/auth.ts, login.ts  session, OTP, lockout, alerts
 src/app/…                หน้าเว็บ + API
-public/campus-map.svg    แผนผังจำลอง — แทนด้วยภาพจริงแล้วปักหมุดใหม่ที่หน้าแผนที่
+src/lib/campus.ts        แผนที่ดาวเทียม Google Maps (MAP_EMBED_URL) — แอดมินปักหมุดห้องได้ที่หน้าแผนที่
 ```
 
 ## หมายเหตุ / สิ่งที่ยังไม่ได้ทำในรอบนี้
