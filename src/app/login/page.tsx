@@ -1,11 +1,13 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { clearSavedChats } from "@/app/assistant/Chat";
 import { api } from "@/lib/api";
 
 type Portal = "student" | "staff";
 
 export default function LoginPage() {
+  useEffect(clearSavedChats, []); // logout redirects here: forget the previous user's chat
   const [portal, setPortal] = useState<Portal | null>(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
