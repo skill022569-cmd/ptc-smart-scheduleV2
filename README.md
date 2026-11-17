@@ -74,7 +74,7 @@ SESSION_SECRET=dev-only-secret-change-me-0123456789abcdef
 ```bash
 npm run db:migrate && npm run db:seed -- --yes && npm run dev
 ```
-ถ้าไม่ได้ตั้ง SMTP ในโหมด dev รหัส OTP จะแสดงในเทอร์มินัล (`[DEV MAIL]`) · ทดสอบ: `npm test` · สร้างดัชนีถาม-ตอบใหม่: `npm run db:sync-qa` · เติมเฉพาะรายชื่อบุคลากรจำลอง (ไม่ลบข้อมูลอื่น): `npm run db:seed-staff`
+ถ้าไม่ได้ตั้ง SMTP ในโหมด dev รหัส OTP จะแสดงในเทอร์มินัล (`[DEV MAIL]`) · ทดสอบ: `npm test` · สร้างดัชนีถาม-ตอบใหม่: `npm run db:sync-qa` · เติมเฉพาะรายชื่อบุคลากรจำลอง (ไม่ลบข้อมูลอื่น): `npm run db:seed-staff` · สร้างบัญชีให้ครูที่ยังไม่มี (รหัสผ่านอยู่ใน `teacher-accounts.csv`): `npm run db:seed-teachers`
 
 ## 🗂️ โครงสร้าง
 ```

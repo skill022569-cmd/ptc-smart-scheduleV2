@@ -11,7 +11,8 @@
     "db:seed": "tsx --env-file=.env.local scripts/seed.ts",
     "test": "tsx scripts/scheduler.test.ts",
     "db:sync-qa": "tsx --env-file=.env.local scripts/sync-qa.ts",
-    "db:seed-staff": "tsx --env-file=.env.local scripts/seed-staff.ts"
+    "db:seed-staff": "tsx --env-file=.env.local scripts/seed-staff.ts",
+    "db:seed-teachers": "tsx --env-file=.env.local scripts/seed-teachers.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
