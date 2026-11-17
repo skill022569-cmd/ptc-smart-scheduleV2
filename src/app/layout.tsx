@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Sarabun } from "next/font/google";
 import { getSession } from "@/lib/auth";
 import NavLinks from "@/components/NavLinks";
+import { APP_VERSION } from "@/lib/version";
 import "./globals.css";
 
 const thai = Sarabun({ variable: "--font-thai", subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"] });
@@ -59,7 +60,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <div className="font-semibold text-white">วิทยาลัยการอาชีพโพนทอง</div>
               <div>สังกัดสำนักงานคณะกรรมการการอาชีวศึกษา กระทรวงศึกษาธิการ</div>
             </div>
-            <div className="text-xs text-brand-200">ระบบจัดตารางเรียน-ตารางสอน (PTC Smart Schedule) · คุ้มครองข้อมูลส่วนบุคคลตาม พ.ร.บ. PDPA</div>
+            <div className="text-xs text-brand-200 sm:text-right">
+              <div>ระบบจัดตารางเรียน-ตารางสอน (PTC Smart Schedule) · คุ้มครองข้อมูลส่วนบุคคลตาม พ.ร.บ. PDPA</div>
+              <div className="mt-0.5">เวอร์ชัน <span className="font-semibold text-gold-300">{APP_VERSION}</span></div>
+            </div>
           </div>
         </footer>
       </body>

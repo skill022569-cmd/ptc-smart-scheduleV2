@@ -136,3 +136,17 @@ CREATE TABLE IF NOT EXISTS timetable_snapshots (
   created_by BIGINT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Problem reports sent from the Q&A page; reviewed in the admin "รายงานปัญหา" tab.
+CREATE TABLE IF NOT EXISTS bug_reports (
+  report_id BIGINT AUTO_RANDOM PRIMARY KEY,
+  user_id BIGINT NULL,
+  category VARCHAR(32) NOT NULL,
+  detail TEXT NOT NULL,
+  page_url VARCHAR(255) NULL,
+  user_agent VARCHAR(512) NULL,
+  app_version VARCHAR(40) NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'new',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_report_status (status, created_at)
+);

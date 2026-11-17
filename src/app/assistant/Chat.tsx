@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/lib/api";
+import ReportForm from "@/components/ReportForm";
 import type { Action } from "@/lib/ai";
 
 type Msg = { from: "me" | "ai"; text: string; actions?: Action[]; error?: boolean };
@@ -63,6 +64,7 @@ export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
         <input className="input" placeholder="พิมพ์คำถาม..." aria-label="คำถาม" value={input} onChange={(e) => setInput(e.target.value)} maxLength={500} />
         <button className="btn" disabled={busy || !input.trim()}>ส่ง</button>
       </form>
+      <ReportForm />
     </div>
   );
 }

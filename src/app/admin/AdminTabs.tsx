@@ -4,12 +4,14 @@ import SchedulerPanel from "./SchedulerPanel";
 import Canvas from "./Canvas";
 import MasterData from "./MasterData";
 import Users from "./Users";
+import Reports from "./Reports";
 
 const TABS = [
   ["ai", "🤖 จัดตารางด้วย AI"],
   ["canvas", "✋ ลากวางตาราง"],
   ["data", "🗂️ ข้อมูลหลัก"],
   ["users", "👥 บัญชีผู้ใช้"],
+  ["reports", "🐞 รายงานปัญหา"],
 ] as const;
 
 export default function AdminTabs({ groups }: { groups: { id: string; name: string }[] }) {
@@ -28,6 +30,7 @@ export default function AdminTabs({ groups }: { groups: { id: string; name: stri
       {tab === "canvas" && <Canvas groups={groups} />}
       {tab === "data" && <MasterData />}
       {tab === "users" && <Users />}
+      {tab === "reports" && <Reports />}
     </div>
   );
 }
