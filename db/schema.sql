@@ -150,3 +150,14 @@ CREATE TABLE IF NOT EXISTS bug_reports (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_report_status (status, created_at)
 );
+
+-- Staff directory / org chart. One row = one person in one position (a teacher may also head a work unit).
+CREATE TABLE IF NOT EXISTS staff (
+  id BIGINT AUTO_RANDOM PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  position VARCHAR(150) NOT NULL,     -- e.g. หัวหน้างานทะเบียน, ครูผู้สอน
+  rank_title VARCHAR(100) NULL,       -- ตำแหน่งทางราชการ e.g. ครู คศ.2
+  division VARCHAR(100) NOT NULL,     -- ผู้บริหารสถานศึกษา / ฝ่าย... / แผนกวิชา
+  unit VARCHAR(150) NULL,             -- งาน or แผนกวิชา
+  sort_order INT NOT NULL DEFAULT 100
+);

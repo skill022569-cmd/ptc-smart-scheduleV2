@@ -27,7 +27,7 @@ export async function answer(question: string, who: { group_id?: string; teacher
   if (day) { filters.push("day_of_week=?"); params.push(day); }
   if (mine && who.group_id) { filters.push("group_id=?"); params.push(who.group_id); }
   else if (mine && who.teacher_id) { filters.push("teacher_id=?"); params.push(who.teacher_id); }
-  const where = filters.length ? `source='manual' OR (source='timetable' AND ${filters.join(" AND ")})` : "1=1";
+  const where = filters.length ? `source<>'timetable' OR (source='timetable' AND ${filters.join(" AND ")})` : "1=1";
 
   const docs = process.env.TIDB_AUTO_EMBEDDING === "true"
     ? await q<Doc>(

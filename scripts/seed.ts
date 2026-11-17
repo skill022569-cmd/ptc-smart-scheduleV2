@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { pool, q } from "../src/lib/db";
 import { BUILDINGS } from "../src/lib/campus";
 import { runAutoSchedule } from "../src/lib/timetable";
+import { seedStaff } from "./staff-data";
 
 if (!process.argv.includes("--yes")) {
   console.error("This deletes ALL data first. Re-run with: npm run db:seed -- --yes");
@@ -44,7 +45,7 @@ const at = (b: string, dx: number, dy: number) => {
 
 async function main() {
   for (const t of ["timetable", "timetable_snapshots", "course_offerings", "students", "student_groups", "teachers",
-    "classrooms", "subjects", "users", "otp_logs", "audit_logs", "announcements", "kb_docs"]) await q(`DELETE FROM ${t}`);
+    "classrooms", "subjects", "users", "otp_logs", "audit_logs", "announcements", "kb_docs", "staff"]) await q(`DELETE FROM ${t}`);
 
   // Rooms: 12 general classrooms + 3 labs/workshops per department.
   for (let i = 1; i <= 6; i++) {
@@ -134,7 +135,7 @@ async function main() {
 
   const kb: [string, string, string | null][] = [
     ["เกณฑ์การติด ร. (ไม่มีสิทธิ์สอบ)", "นักเรียนต้องมีเวลาเรียนไม่น้อยกว่าร้อยละ 80 ของเวลาเรียนทั้งหมดในแต่ละรายวิชา หากเวลาเรียนไม่ถึงจะได้ผล ขร. (ขาดเรียน) และไม่มีสิทธิ์สอบปลายภาค ส่วน ร. หมายถึงผลการเรียนยังไม่สมบูรณ์ เช่น ส่งงานไม่ครบ ต้องติดต่อครูผู้สอนเพื่อแก้ ร. ภายใน 2 สัปดาห์หลังประกาศผล มิฉะนั้นจะได้ผลการเรียน 0", null],
-    ["วิธีขอเปลี่ยนกลุ่มเรียน", "ยื่นคำร้องขอเปลี่ยนกลุ่มเรียนที่งานทะเบียน ฝ่ายวิชาการ ภายใน 2 สัปดาห์แรกของภาคเรียน โดยต้องได้รับความเห็นชอบจากครูที่ปรึกษาและหัวหน้าแผนก การเปลี่ยนจะมีผลเมื่อฝ่ายวิชาการอนุมัติและปรับตารางเรียนในระบบแล้ว", null],
+    ["วิธีขอเปลี่ยนกลุ่มเรียน", "ยื่นคำร้องขอเปลี่ยนกลุ่มเรียนที่งานทะเบียน ฝ่ายบริหารทรัพยากร ภายใน 2 สัปดาห์แรกของภาคเรียน โดยต้องได้รับความเห็นชอบจากครูที่ปรึกษาและหัวหน้าแผนก การเปลี่ยนจะมีผลเมื่อฝ่ายวิชาการอนุมัติและปรับตารางเรียนในระบบแล้ว", null],
     ["ที่ตั้งแผนกช่างยนต์", "แผนกช่างยนต์อยู่ที่อาคารช่างยนต์ ทางทิศตะวันตกเฉียงใต้ของวิทยาลัย มีโรงฝึกงาน AUTO-101 ถึง AUTO-103", "/map?q=AUTO"],
     ["ที่ตั้งแผนกช่างไฟฟ้ากำลัง", "แผนกช่างไฟฟ้ากำลังอยู่ที่อาคารช่างไฟฟ้ากำลัง ถัดจากอาคารช่างยนต์ มีโรงฝึกงาน ELEC-101 ถึง ELEC-103", "/map?q=ELEC"],
     ["ที่ตั้งแผนกช่างอิเล็กทรอนิกส์", "แผนกช่างอิเล็กทรอนิกส์อยู่ที่อาคารช่างอิเล็กทรอนิกส์ มีห้องปฏิบัติการ ELEX-101 ถึง ELEX-103", "/map?q=ELEX"],
@@ -148,6 +149,8 @@ async function main() {
     await q("INSERT INTO kb_docs (title, content, action_url) VALUES (?,?,?)", [title, `${title}\n${content}`, url]);
   }
 
+  const st = await seedStaff();
+  console.log(`✓ staff directory: ${st.staff} positions`);
   const r = await runAutoSchedule(null);
   console.log(`✓ seeded. AI scheduler placed ${r.placedHours} hours, unplaced blocks: ${r.unplaced.length}`);
   for (const u of r.unplaced) console.log("   - unplaced:", u);

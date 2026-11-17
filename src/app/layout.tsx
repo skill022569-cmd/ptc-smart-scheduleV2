@@ -22,6 +22,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     { href: "/", label: "หน้าแรก" },
     { href: "/schedule", label: s?.role === "teacher" ? "ตารางสอน" : "ตารางเรียน" },
     { href: "/map", label: "แผนที่วิทยาลัย" },
+    { href: "/staff", label: "บุคลากร" },
     { href: "/assistant", label: "ถาม-ตอบ AI" },
     ...(s?.role === "admin" ? [{ href: "/admin", label: "งานวิชาการ" }] : []),
   ];

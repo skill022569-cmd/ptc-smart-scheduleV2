@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { q, tx } from "@/lib/db";
 import { apiUser, audit } from "@/lib/auth";
 import { ENTITIES, type Entity } from "@/lib/entities";
+import { syncStaffDocs } from "@/lib/staff";
 
 type Ctx = { params: Promise<{ entity: string }> };
 
@@ -55,6 +56,7 @@ export async function POST(req: Request, ctx: Ctx) {
     } else {
       await q(`INSERT INTO ${g.e.table} SET ?`, [data]);
     }
+    if (g.e.table === "staff") await syncStaffDocs(); // keep Q&A answers about staff current
     await audit(g.s.uid, "ADMIN_CREATE", { table: g.e.table });
     return NextResponse.json({ ok: true });
   } catch (err) { return sqlError(err); }
@@ -74,6 +76,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     }
     if (!Object.keys(data).length) throw new Error("ไม่มีข้อมูลให้แก้ไข");
     await q(`UPDATE ${g.e.table} SET ? WHERE ${g.e.pk}=?`, [data, body.id]);
+    if (g.e.table === "staff") await syncStaffDocs(); // keep Q&A answers about staff current
     await audit(g.s.uid, "ADMIN_UPDATE", { table: g.e.table, id: body.id });
     return NextResponse.json({ ok: true });
   } catch (err) { return sqlError(err); }
@@ -91,6 +94,7 @@ export async function DELETE(req: Request, ctx: Ctx) {
       }
       await c.query(`DELETE FROM ${g.e.table} WHERE ${g.e.pk}=?`, [id]);
     });
+    if (g.e.table === "staff") await syncStaffDocs(); // keep Q&A answers about staff current
     await audit(g.s.uid, "ADMIN_DELETE", { table: g.e.table, id });
     return NextResponse.json({ ok: true });
   } catch (err) { return sqlError(err); }

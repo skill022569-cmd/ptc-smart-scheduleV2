@@ -55,6 +55,16 @@ export const ENTITIES: Record<string, Entity> = {
     table: "announcements", label: "ประกาศ", pk: "id", autoPk: true, order: "created_at DESC",
     fields: [{ key: "title", label: "หัวข้อ", required: true }, { key: "body", label: "เนื้อหา", type: "textarea", required: true }],
   },
+  staff: {
+    table: "staff", label: "บุคลากร", pk: "id", autoPk: true, order: "sort_order, division, unit",
+    fields: [
+      { key: "full_name", label: "ชื่อ-สกุล", required: true }, { key: "position", label: "ตำแหน่ง/หน้าที่", required: true },
+      { key: "rank_title", label: "ตำแหน่งทางราชการ" },
+      { key: "division", label: "ฝ่าย", type: "select", required: true,
+        options: ["ผู้บริหารสถานศึกษา", "ฝ่ายบริหารทรัพยากร", "ฝ่ายยุทธศาสตร์และแผนงาน", "ฝ่ายพัฒนากิจการนักเรียนนักศึกษา", "ฝ่ายวิชาการ", "แผนกวิชา"] },
+      { key: "unit", label: "งาน / แผนกวิชา" }, { key: "sort_order", label: "ลำดับ (น้อย = ขึ้นก่อน)", type: "number" },
+    ],
+  },
   kb_docs: {
     // Timetable sentences are generated automatically; only hand-written documents are editable here.
     table: "kb_docs", label: "ฐานความรู้ AI", pk: "id", autoPk: true, order: "title", where: "source='manual'",

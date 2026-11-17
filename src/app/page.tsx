@@ -10,6 +10,7 @@ const SERVICES = [
   { href: "/schedule", icon: "📅", title: "ตารางเรียน-ตารางสอน", desc: "ดูตารางของตนเอง บันทึกเป็นรูปภาพ" },
   { href: "/map", icon: "🗺️", title: "แผนที่วิทยาลัย", desc: "ค้นหาอาคารและห้องปฏิบัติการ" },
   { href: "/assistant", icon: "💬", title: "ถาม-ตอบ AI", desc: "ถามเรื่องตารางเรียนและระเบียบ" },
+  { href: "/staff", icon: "👥", title: "บุคลากร", desc: "ผู้บริหาร ฝ่ายงาน และแผนกวิชา" },
   { href: "/profile", icon: "🛡️", title: "ข้อมูลส่วนบุคคล", desc: "จัดการบัญชีและสิทธิ์ตาม PDPA" },
 ];
 
@@ -43,7 +44,7 @@ export default async function Home() {
 
       <section>
         <h2 className="section-title mb-3">บริการ</h2>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           {SERVICES.map((x) => (
             <Link key={x.href} href={x.href} className="card group !p-4 transition hover:-translate-y-0.5 hover:ring-gold-400">
               <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-brand-50 text-2xl">{x.icon}</div>
