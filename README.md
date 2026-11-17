@@ -56,6 +56,7 @@ npm run db:seed -- --yes
 | `SESSION_SECRET` | สุ่มยาว ≥ 32 ตัว (`openssl rand -base64 48`) |
 | `SMTP_*` | SMTP สำหรับส่ง OTP เช่น Brevo (`smtp-relay.brevo.com:587`) · `SMTP_FROM` ต้องเป็นอีเมลผู้ส่งที่ยืนยันแล้ว |
 | `TIDB_AUTO_EMBEDDING` | `true` บน TiDB Cloud Starter (AWS) — ถ้าไม่เปิด (เช่น dev ในเครื่อง) ระบบค้นแบบเทียบตัวอักษรแทน |
+| `GEMINI_API_KEY` | (ไม่บังคับ) key ฟรีจาก <https://aistudio.google.com/apikey> ให้ Gemini อ่านผลค้นจาก TiDB แล้วตอบเป็นประโยค คิด/สรุป/นับได้ · ไม่ใส่ = แสดงผลค้นหาอย่างเดียว |
 | `SKIP_OTP_USERNAMES` | ชั่วคราว: ชื่อผู้ใช้ที่ข้าม OTP เช่น `admin` — ลบออกก่อนใช้งานจริง |
 
 ---

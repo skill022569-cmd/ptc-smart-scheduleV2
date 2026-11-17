@@ -35,7 +35,7 @@ export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <div>
         <h1 className="text-2xl font-bold text-brand-800">🤖 ผู้ช่วย AI ฝ่ายวิชาการ</h1>
-        <p className="text-stone-500">ถามเรื่องตารางเรียน ห้องเรียน ครูผู้สอน หรือระเบียบของวิทยาลัย — ค้นจากฐานข้อมูลจริงล่าสุดด้วย TiDB Vector Search</p>
+        <p className="text-stone-500">ถามเรื่องตารางเรียน ห้องเรียน ครูผู้สอน หรือระเบียบของวิทยาลัย — ค้นจากฐานข้อมูลจริงล่าสุดด้วย TiDB Vector Search แล้วเรียบเรียงคำตอบด้วย Google Gemini</p>
       </div>
       <div className="card min-h-80 space-y-3" aria-live="polite">
         {!msgs.length && (
@@ -64,6 +64,7 @@ export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
         <input className="input" placeholder="พิมพ์คำถาม..." aria-label="คำถาม" value={input} onChange={(e) => setInput(e.target.value)} maxLength={500} />
         <button className="btn" disabled={busy || !input.trim()}>ส่ง</button>
       </form>
+      <p className="text-xs text-stone-400">คำถามจะถูกส่งไปประมวลผลที่ Google Gemini · โปรดอย่าพิมพ์ข้อมูลส่วนตัว เช่น เลขบัตรประชาชน หรือรหัสผ่าน</p>
       <ReportForm />
     </div>
   );
