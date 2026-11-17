@@ -3,6 +3,8 @@ import { q } from "@/lib/db";
 import { apiUser, audit } from "@/lib/auth";
 import { answer } from "@/lib/ai";
 
+export const maxDuration = 60; // room for the 25 s Gemini timeout on Vercel
+
 export async function POST(req: Request) {
   const s = await apiUser();
   if (!s) return NextResponse.json({ error: "กรุณาเข้าสู่ระบบก่อนใช้ผู้ช่วย AI" }, { status: 401 });

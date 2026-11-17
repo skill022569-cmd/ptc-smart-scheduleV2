@@ -21,7 +21,8 @@ const TOP_K = 12; // documents retrieved for the LLM; the no-LLM fallback shows 
 async function think(question: string, docs: Doc[], who: { group_id?: string; teacher_id?: string }) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
-  const model = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
+  // Flash-Lite answers in ~1-3 s; thinking models (Flash/Pro) were timing out on the free tier for this simple summarising job.
+  const model = process.env.GEMINI_MODEL ?? "gemini-flash-lite-latest";
   const now = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok", weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const system = `คุณคือผู้ช่วยฝ่ายวิชาการ วิทยาลัยการอาชีพโพนทอง ตอบเป็นภาษาไทยสุภาพ กระชับ อ่านง่าย
 - ใช้เฉพาะข้อมูลใน <ข้อมูล> เท่านั้น ห้ามแต่งหรือเดาข้อมูลที่ไม่มี ถ้าข้อมูลไม่พอให้บอกตรง ๆ และแนะนำให้ติดต่อฝ่ายวิชาการ อาคารอำนวยการ ชั้น 1
@@ -37,9 +38,9 @@ async function think(question: string, docs: Doc[], who: { group_id?: string; te
       contents: [{ role: "user", parts: [{ text: `<ข้อมูล>\n${docs.map((d, i) => `[${i + 1}] ${d.content}`).join("\n")}\n</ข้อมูล>\n\nคำถาม: ${question}` }] }],
       generationConfig: { temperature: 0.2, maxOutputTokens: 2048 },
     }),
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(25_000),
   });
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  if (!res.ok) throw new Error(`${model} ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
   const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim();
   return text || null;
