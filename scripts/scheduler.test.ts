@@ -42,7 +42,7 @@ assert.equal(bad.unplaced.length, 1);
 console.log("✓ scheduler tests passed");
 
 // Day detection for vector Q&A filters (today = Monday = 1).
-import { askedDay } from "../src/lib/day";
+import { askedDay, expandQuery } from "../src/lib/query";
 assert.equal(askedDay("วันนี้ ปวช.2 ช่างไฟฟ้า เรียนที่ไหน?", 1), 1);
 assert.equal(askedDay("พรุ่งนี้เรียนอะไร", 5), 6);
 assert.equal(askedDay("วันพฤหัสบดีครูสมศรีสอนที่ไหน", 1), 4);
@@ -51,3 +51,9 @@ assert.equal(askedDay("เกณฑ์การติด ร.", 1), null);
 assert.equal(askedDay("วันเสาร์เรียนไหม", 1), 6);
 assert.equal(askedDay("วันอาทิตย์มีเรียนไหม", 1), 0);
 console.log("✓ day parsing tests passed");
+assert.equal(expandQuery("ผอ.ชื่ออะไร"), "ผู้อำนวยการชื่ออะไร");
+assert.equal(expandQuery("รองผอ.ฝ่ายวิชาการคือใคร"), "รองผู้อำนวยการฝ่ายวิชาการคือใคร");
+assert.equal(expandQuery("ใครคือ หน.งานทะเบียน"), "ใครคือ หัวหน้างานทะเบียน");
+assert.equal(expandQuery("นักเรียนผอมไหม"), "นักเรียนผอมไหม");
+assert.equal(expandQuery("อ.สมศรีสอนอะไร"), "ครูสมศรีสอนอะไร");
+console.log("✓ abbreviation tests passed");

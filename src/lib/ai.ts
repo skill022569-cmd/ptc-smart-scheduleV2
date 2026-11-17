@@ -1,9 +1,9 @@
 import "server-only";
 import { q } from "./db";
-import { askedDay } from "./day";
+import { askedDay, expandQuery } from "./query";
 
 export type Action = { label: string; href: string };
-export type Answer = { answer: string; actions: Action[] };
+export type Answer = { answer: string; actions: Action[]; note?: string }; // note: why the LLM was skipped (shown to admins)
 type Doc = { title: string; content: string; action_url: string | null; source: string };
 
 // shortcut: local dev has no EMBED_TEXT, so rank by shared character pairs (Thai has no spaces); fine for testing only.
@@ -47,7 +47,8 @@ async function think(question: string, docs: Doc[], who: { group_id?: string; te
 
 // Q&A with TiDB Vector Search: the question is embedded by TiDB (EMBED_TEXT) and matched against
 // college documents and the timetable sentences produced by syncTimetableDocs().
-export async function answer(question: string, who: { group_id?: string; teacher_id?: string }): Promise<Answer> {
+export async function answer(asked: string, who: { group_id?: string; teacher_id?: string }): Promise<Answer> {
+  const question = expandQuery(asked);
   const day = askedDay(question);
   if (day === 0 || day === 6) return { answer: "วันนั้นเป็นวันหยุด ไม่มีคาบเรียนครับ 😊", actions: [] };
 
@@ -77,7 +78,12 @@ export async function answer(question: string, who: { group_id?: string; teacher
     actions.push({ label: room ? `📍 ดูตำแหน่งห้อง ${room} บนแผนที่` : `➡️ ${d.title}`, href: d.action_url });
   }
   // Any LLM failure (no key, quota, timeout) falls back to showing the search results as before.
-  const llm = await think(question, docs, who).catch((e) => { console.error("Gemini failed", e); return null; });
+  let note = process.env.GEMINI_API_KEY ? "Gemini ไม่ได้ส่งคำตอบกลับมา" : "ยังไม่ได้ตั้งค่า GEMINI_API_KEY ใน Vercel";
+  const llm = await think(question, docs, who).catch((e) => {
+    console.error("Gemini failed", e);
+    note = `เรียก Gemini ไม่สำเร็จ: ${(e as Error).message}`;
+    return null;
+  });
   if (llm) return { answer: llm, actions };
-  return { answer: `🔎 ข้อมูลที่เกี่ยวข้องที่สุดจากฐานข้อมูล:\n\n${docs.slice(0, 6).map((d) => `• ${d.content}`).join("\n\n")}`, actions };
+  return { note, answer: `🔎 ข้อมูลที่เกี่ยวข้องที่สุดจากฐานข้อมูล:\n\n${docs.slice(0, 6).map((d) => `• ${d.content}`).join("\n\n")}`, actions };
 }

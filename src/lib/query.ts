@@ -11,3 +11,16 @@ export function askedDay(question: string, today = bangkokDow()): number | null 
   const i = DAY_WORDS.findIndex((d) => question.includes(d));
   return i >= 0 ? i : null;
 }
+
+// Common Thai school abbreviations the embedding model does not understand; expanded before searching.
+const ABBREVIATIONS: [RegExp, string][] = [
+  [/ผอ\.?(?![มง])/g, "ผู้อำนวยการ"], // "ผอ." / "รองผอ." — but not ผอม/ผอง
+  [/หน\.(?=\S)/g, "หัวหน้า"],
+  [/จนท\.?/g, "เจ้าหน้าที่"],
+  [/วก\.?/g, "วิทยาลัยการอาชีพ"],
+  [/อ\.(?=[ก-๙])/g, "ครู"],
+];
+
+export function expandQuery(question: string) {
+  return ABBREVIATIONS.reduce((s, [re, full]) => s.replace(re, full), question);
+}

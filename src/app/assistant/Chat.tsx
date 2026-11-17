@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import ReportForm from "@/components/ReportForm";
 import type { Action } from "@/lib/ai";
 
-type Msg = { from: "me" | "ai"; text: string; actions?: Action[]; error?: boolean };
+type Msg = { from: "me" | "ai"; text: string; actions?: Action[]; note?: string; error?: boolean };
 
 const EXAMPLES = {
   student: ["วันนี้ฉันเรียนที่ไหนบ้าง", "เกณฑ์การติด ร. เป็นอย่างไร?", "แผนกช่างกลอยู่ตึกไหน?"],
@@ -25,7 +25,7 @@ export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
     setBusy(true);
     try {
       const r = await api("/api/chat", "POST", { question });
-      setMsgs((m) => [...m, { from: "ai", text: r.answer, actions: r.actions }]);
+      setMsgs((m) => [...m, { from: "ai", text: r.answer, actions: r.actions, note: r.note }]);
     } catch (e) {
       setMsgs((m) => [...m, { from: "ai", text: (e as Error).message, error: true }]);
     } finally { setBusy(false); }
@@ -50,6 +50,7 @@ export default function Chat({ role }: { role: keyof typeof EXAMPLES }) {
           <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[85%] rounded-2xl px-4 py-2 ${m.from === "me" ? "bg-brand-600 text-white" : m.error ? "bg-rose-50 text-rose-700" : "bg-stone-100"}`}>
               <p className="whitespace-pre-wrap">{m.text}</p>
+              {m.note && <p className="mt-2 rounded bg-gold-100 px-2 py-1 text-xs text-gold-700">⚙️ (เห็นเฉพาะแอดมิน) โหมดสำรอง: {m.note}</p>}
               {!!m.actions?.length && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {m.actions.map((a) => <Link key={a.href} href={a.href} className="rounded-lg bg-white px-3 py-1 text-sm text-brand-700 ring-1 ring-brand-200">{a.label}</Link>)}

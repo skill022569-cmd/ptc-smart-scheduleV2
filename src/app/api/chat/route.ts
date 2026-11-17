@@ -17,5 +17,6 @@ export async function POST(req: Request) {
 
   const [st] = await q<{ group_id: string }>("SELECT group_id FROM students WHERE user_id=?", [s.uid]);
   const [t] = await q<{ teacher_id: string }>("SELECT teacher_id FROM teachers WHERE user_id=?", [s.uid]);
-  return NextResponse.json(await answer(question.trim(), { ...st, ...t }));
+  const a = await answer(question.trim(), { ...st, ...t });
+  return NextResponse.json({ ...a, note: s.role === "admin" ? a.note : undefined });
 }
