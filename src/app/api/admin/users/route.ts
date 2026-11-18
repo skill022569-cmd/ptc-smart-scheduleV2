@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { q, tx } from "@/lib/db";
 import { apiUser, audit, maskEmail } from "@/lib/auth";
+import { consumeOtp, sendOtp } from "@/lib/otp";
 
 const tempPassword = () => randomBytes(6).toString("base64url") + "7";
 
@@ -50,14 +51,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: e.code === "ER_DUP_ENTRY" ? "ชื่อผู้ใช้/อีเมล/ครูคนนี้มีบัญชีแล้ว" : e.message }, { status: 400 });
   }
   await audit(s.uid, "ADMIN_CREATE_USER", { username: p.data.username, role: p.data.role });
-  return NextResponse.json({ ok: true, password });
+  // Verify the new account's email right away: the owner reads the code from their inbox (popup in the admin UI).
+  const [u] = await q<{ user_id: string }>("SELECT user_id FROM users WHERE username=?", [p.data.username]);
+  const otpError = await sendOtp(u.user_id, p.data.email, "VERIFY_EMAIL").catch((e: Error) => `ส่งอีเมลไม่สำเร็จ: ${e.message}`);
+  return NextResponse.json({ ok: true, password, id: u.user_id, email: maskEmail(p.data.email), otpError });
 }
 
 // { id, action: "unlock" | "reset" }
 export async function PATCH(req: Request) {
   const s = await apiUser(["admin"]);
   if (!s) return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  const body = (await req.json().catch(() => ({}))) as { id?: string; username?: string; action?: string; display_name?: string };
+  const body = (await req.json().catch(() => ({}))) as { id?: string; username?: string; action?: string; display_name?: string; code?: string };
   const { action } = body;
   // Students are not listed, so they can be addressed by username (student id).
   const id = body.id ?? (await q<{ user_id: string }>("SELECT user_id FROM users WHERE username=?", [body.username ?? ""]))[0]?.user_id;
@@ -65,6 +69,21 @@ export async function PATCH(req: Request) {
   if (action === "unlock") {
     await q("UPDATE users SET locked_until=NULL, failed_attempts=0 WHERE user_id=?", [id]);
     await audit(s.uid, "ADMIN_UNLOCK", { user: id });
+    return NextResponse.json({ ok: true });
+  }
+  if (action === "send-verify" || action === "verify-email") {
+    const [t] = await q<{ email: string | null; is_email_verified: number }>("SELECT email, is_email_verified FROM users WHERE user_id=?", [id]);
+    if (!t?.email) return NextResponse.json({ error: "บัญชีนี้ยังไม่มีอีเมล" }, { status: 400 });
+    if (t.is_email_verified) return NextResponse.json({ error: "บัญชีนี้ยืนยันอีเมลแล้ว" }, { status: 400 });
+    if (action === "send-verify") {
+      const err = await sendOtp(id, t.email, "VERIFY_EMAIL");
+      return err ? NextResponse.json({ error: err }, { status: 429 }) : NextResponse.json({ ok: true, email: maskEmail(t.email) });
+    }
+    if (!(await consumeOtp(id, "VERIFY_EMAIL", String(body.code ?? "")))) {
+      return NextResponse.json({ error: "รหัส OTP ไม่ถูกต้องหรือหมดอายุ" }, { status: 400 });
+    }
+    await q("UPDATE users SET is_email_verified=TRUE WHERE user_id=?", [id]);
+    await audit(s.uid, "ADMIN_VERIFIED_EMAIL", { user: id });
     return NextResponse.json({ ok: true });
   }
   if (action === "approve") {

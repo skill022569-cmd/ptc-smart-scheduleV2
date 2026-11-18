@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import OtpModal from "@/components/OtpModal";
 
 type U = { user_id: string; username: string; display_name: string | null; role: string; email: string; pdpa_consent: number; is_email_verified: number; approved: number; locked: string | number | null; teacher_id: string | null };
 
@@ -10,6 +11,7 @@ export default function Users() {
   const [student, setStudent] = useState("");
   const [viewAs, setViewAs] = useState("");
   const [delStudent, setDelStudent] = useState("");
+  const [verifying, setVerifying] = useState<{ id: string; email: string; username: string } | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = useCallback(async () => setUsers(await api("/api/admin/users")), []);
@@ -22,10 +24,16 @@ export default function Users() {
     ev.preventDefault();
     run(async () => {
       const r = await api("/api/admin/users", "POST", { ...form, teacher_id: form.teacher_id || undefined });
+      if (!r.otpError) setVerifying({ id: r.id, email: r.email, username: form.username });
       setForm({ display_name: "", username: "", email: "", role: "teacher", teacher_id: "" });
-      return `สร้างบัญชีแล้ว รหัสผ่านชั่วคราว: ${r.password} (แสดงครั้งเดียว ผู้ใช้ต้องเปลี่ยนเมื่อเข้าครั้งแรก)`;
+      return `สร้างบัญชีแล้ว รหัสผ่านชั่วคราว: ${r.password} (แสดงครั้งเดียว ผู้ใช้ต้องเปลี่ยนเมื่อเข้าครั้งแรก)${r.otpError ? ` · ${r.otpError}` : ""}`;
     });
   };
+  const startVerify = (u: U) => run(async () => {
+    const r = await api("/api/admin/users", "PATCH", { id: u.user_id, action: "send-verify" });
+    setVerifying({ id: u.user_id, email: r.email, username: u.username });
+    return `ส่งรหัสยืนยันไปที่อีเมลของ ${u.username} แล้ว`;
+  });
   async function startViewAs(username: string) {
     try {
       await api("/api/impersonate", "POST", { username });
@@ -60,6 +68,7 @@ export default function Users() {
                   {!u.approved ? <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">รออนุมัติ</span>
                     : Number(u.locked) ? <span className="rounded bg-rose-100 px-1.5 py-0.5 text-rose-700">ถูกล็อก</span> : <span>ปกติ</span>}
                   {!u.is_email_verified && <span className="rounded bg-stone-100 px-1.5 py-0.5 text-stone-600">ยังไม่ยืนยันอีเมล</span>}
+                  {!u.is_email_verified && u.email !== "-" && <button className="text-brand-700 underline" onClick={() => startVerify(u)}>📧 ยืนยันตอนนี้</button>}
                 </td>
                 <td className="whitespace-nowrap text-right">
                   {Number(u.locked) ? <button className="px-2 text-brand-600" onClick={() => patch({ id: u.user_id, action: "unlock" }, `ปลดล็อก ${u.username} แล้ว`)}>ปลดล็อก</button> : null}
@@ -108,6 +117,18 @@ export default function Users() {
           <input className="input" placeholder="รหัสนักศึกษา" aria-label="รหัสนักศึกษาที่จะลบบัญชี" value={delStudent} onChange={(e) => setDelStudent(e.target.value)} required />
           <button className="btn-danger w-full">ลบบัญชี</button>
         </form>
+        {verifying && (
+          <OtpModal email={verifying.email} title={`ยืนยันอีเมลของ ${verifying.username}`}
+            note="ให้เจ้าของบัญชีเปิดอีเมลแล้วบอกรหัส 6 หลัก · ถ้าเจ้าของไม่อยู่ กด ยืนยันภายหลัง แล้วเขาจะยืนยันเองตอนเข้าใช้ครั้งแรก"
+            onVerify={async (code) => {
+              await api("/api/admin/users", "PATCH", { id: verifying.id, action: "verify-email", code });
+              setVerifying(null);
+              setMsg({ ok: true, text: `ยืนยันอีเมลของ ${verifying.username} แล้ว ✓` });
+              load();
+            }}
+            onResend={async () => { await api("/api/admin/users", "PATCH", { id: verifying.id, action: "send-verify" }); }}
+            onCancel={() => setVerifying(null)} cancelLabel="ยืนยันภายหลัง" />
+        )}
         {msg && <p role="status" className={`rounded-xl p-3 text-sm ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>{msg.text}</p>}
       </div>
     </div>

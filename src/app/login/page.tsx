@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { clearSavedChats } from "@/app/assistant/Chat";
 import { api } from "@/lib/api";
+import OtpModal from "@/components/OtpModal";
 
 type Portal = "student" | "staff";
 
@@ -13,7 +14,6 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [otpEmail, setOtpEmail] = useState<string | null>(null);
-  const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -27,10 +27,11 @@ export default function LoginPage() {
     if (r.otp) setOtpEmail(r.email);
     else window.location.href = "/schedule";
   });
-  const verify = () => run(async () => {
+  const verify = async (code: string) => {
     await api("/api/auth/verify-otp", "POST", { code });
     window.location.href = "/schedule";
-  });
+  };
+  const resend = async () => { await api("/api/auth/login", "POST", { username, password, portal }); };
 
   if (!portal) {
     return (
@@ -58,26 +59,19 @@ export default function LoginPage() {
       <div className="card space-y-4">
         <button onClick={() => { setPortal(null); setOtpEmail(null); setError(""); }} className="text-sm text-brand-600">← เปลี่ยนสถานะ</button>
         <h1 className="text-xl font-bold">{portal === "student" ? "🎓 นักเรียน/นักศึกษา" : "👩‍🏫 บุคลากร"}</h1>
-        {!otpEmail ? (
-          <form onSubmit={(e) => { e.preventDefault(); login(); }} className="space-y-3">
-            <div>
-              <label className="label" htmlFor="u">{portal === "student" ? "รหัสนักศึกษา" : "ชื่อผู้ใช้"}</label>
-              <input id="u" className="input" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
-            </div>
-            <div>
-              <label className="label" htmlFor="p">รหัสผ่าน</label>
-              <input id="p" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
-            </div>
-            <button className="btn w-full" disabled={busy}>{busy ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ"}</button>
-          </form>
-        ) : (
-          <form onSubmit={(e) => { e.preventDefault(); verify(); }} className="space-y-3">
-            <p className="text-sm text-stone-600">ส่งรหัส OTP 6 หลักไปที่ <b>{otpEmail}</b> แล้ว (ใช้ได้ 5 นาที)</p>
-            <input className="input text-center text-2xl tracking-[0.5em]" inputMode="numeric" maxLength={6} value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} autoComplete="one-time-code" autoFocus aria-label="รหัส OTP" />
-            <button className="btn w-full" disabled={busy || code.length !== 6}>ยืนยัน OTP</button>
-            <button type="button" className="btn-ghost w-full" disabled={busy} onClick={login}>ส่งรหัสใหม่</button>
-          </form>
+        <form onSubmit={(e) => { e.preventDefault(); login(); }} className="space-y-3">
+          <div>
+            <label className="label" htmlFor="u">{portal === "student" ? "รหัสนักศึกษา" : "ชื่อผู้ใช้"}</label>
+            <input id="u" className="input" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
+          </div>
+          <div>
+            <label className="label" htmlFor="p">รหัสผ่าน</label>
+            <input id="p" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+          </div>
+          <button className="btn w-full" disabled={busy}>{busy ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ"}</button>
+        </form>
+        {otpEmail && (
+          <OtpModal email={otpEmail} title="ยืนยันตัวตนด้วย OTP" onVerify={verify} onResend={resend} onCancel={() => setOtpEmail(null)} />
         )}
         {error && <p role="alert" className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
       </div>

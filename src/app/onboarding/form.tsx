@@ -2,13 +2,13 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { PDPA_VERSION } from "@/lib/config";
+import OtpModal from "@/components/OtpModal";
 
 export default function OnboardingForm({ mustChange, needEmail, email: initialEmail }: { mustChange: boolean; needEmail: boolean; email: string }) {
   const [consent, setConsent] = useState(false);
   const [verified, setVerified] = useState(!needEmail);
   const [email, setEmail] = useState(initialEmail);
   const [sentTo, setSentTo] = useState("");
-  const [code, setCode] = useState("");
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [error, setError] = useState("");
@@ -19,8 +19,9 @@ export default function OnboardingForm({ mustChange, needEmail, email: initialEm
     setError("");
     try { await fn(); } catch (err) { setError((err as Error).message); } finally { setBusy(false); }
   }
-  const sendCode = () => call(async () => setSentTo((await api("/api/me/verify-email", "POST", { email })).email));
-  const confirmCode = () => call(async () => { await api("/api/me/verify-email", "PUT", { code }); setVerified(true); });
+  const requestCode = async () => setSentTo((await api("/api/me/verify-email", "POST", { email })).email);
+  const sendCode = () => call(requestCode);
+  const confirmCode = async (code: string) => { await api("/api/me/verify-email", "PUT", { code }); setVerified(true); setSentTo(""); };
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,19 +52,12 @@ export default function OnboardingForm({ mustChange, needEmail, email: initialEm
             <p className="font-medium">📧 ขั้นที่ 1: ยืนยันอีเมลของคุณด้วยรหัส OTP</p>
             <div className="flex gap-2">
               <input type="email" className="input" placeholder="อีเมลของคุณ" aria-label="อีเมล" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-              <button type="button" className="btn-ghost shrink-0" onClick={sendCode} disabled={busy || !email}>{sentTo ? "ส่งใหม่" : "ส่งรหัส"}</button>
+              <button type="button" className="btn-ghost shrink-0" onClick={sendCode} disabled={busy || !email}>ส่งรหัส</button>
             </div>
-            {sentTo && (
-              <div className="space-y-2">
-                <p className="text-sm text-stone-600">ส่งรหัส 6 หลักไปที่ <b>{sentTo}</b> แล้ว (ใช้ได้ 5 นาที · ถ้าไม่เห็นให้ดูในโฟลเดอร์สแปม)</p>
-                <div className="flex gap-2">
-                  <input className="input text-center tracking-[0.4em]" inputMode="numeric" maxLength={6} aria-label="รหัส OTP" autoComplete="one-time-code"
-                    value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
-                  <button type="button" className="btn shrink-0" onClick={confirmCode} disabled={busy || code.length !== 6}>ยืนยัน</button>
-                </div>
-              </div>
-            )}
           </div>
+        )}
+        {sentTo && !verified && (
+          <OtpModal email={sentTo} title="ยืนยันอีเมลของคุณ" onVerify={confirmCode} onResend={requestCode} onCancel={() => setSentTo("")} cancelLabel="เปลี่ยนอีเมล" />
         )}
         {verified && needEmail && <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">✓ ยืนยันอีเมลเรียบร้อยแล้ว</p>}
         <label className="flex items-start gap-2">
