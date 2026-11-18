@@ -53,24 +53,32 @@ export async function clearPending() {
   (await cookies()).delete("pending2fa");
 }
 
+// First-login steps every account must finish: verified email (OTP), own password, PDPA consent.
+// An impersonating admin skips them: they must not do these on the owner's behalf.
+async function setupDone(s: Session) {
+  if (s.actor) return true;
+  const [u] = await q<{ must_change_password: number; pdpa_consent: number; is_email_verified: number }>(
+    "SELECT must_change_password, pdpa_consent, is_email_verified FROM users WHERE user_id=?", [s.uid]);
+  return u ? !u.must_change_password && !!u.pdpa_consent && !!u.is_email_verified : null;
+}
+
 // For server pages: returns the session or redirects. Also enforces first-login steps.
 export async function requireUser(roles?: Role[]) {
   const s = await getSession();
   if (!s) redirect("/login");
-  const [u] = await q<{ must_change_password: number; pdpa_consent: number }>(
-    "SELECT must_change_password, pdpa_consent FROM users WHERE user_id=?", [s.uid]);
-  if (!u) redirect("/api/auth/logout");
-  // An impersonating admin must not set a password or give PDPA consent on the owner's behalf, so skip onboarding.
-  if (!s.actor && (u.must_change_password || !u.pdpa_consent)) redirect("/onboarding");
+  const done = await setupDone(s);
+  if (done === null) redirect("/api/auth/logout");
+  if (!done) redirect("/onboarding");
   if (roles && !roles.includes(s.role)) redirect("/");
   return s;
 }
 
-// For API routes: returns session or null (caller answers 401/403).
+// For API routes: returns session or null (caller answers 401/403). Accounts that have not finished
+// first-login setup (e.g. email not verified yet) get null too, so a password alone never reaches the APIs.
 export async function apiUser(roles?: Role[]) {
   const s = await getSession();
   if (!s || (roles && !roles.includes(s.role))) return null;
-  return s;
+  return (await setupDone(s)) ? s : null;
 }
 
 export const sha256 = (v: string) => createHash("sha256").update(v).digest("hex");

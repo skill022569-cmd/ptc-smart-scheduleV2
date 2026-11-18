@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
-type U = { user_id: string; username: string; display_name: string | null; role: string; email: string; pdpa_consent: number; locked: string | number | null; teacher_id: string | null };
+type U = { user_id: string; username: string; display_name: string | null; role: string; email: string; pdpa_consent: number; is_email_verified: number; approved: number; locked: string | number | null; teacher_id: string | null };
 
 export default function Users() {
   const [users, setUsers] = useState<U[]>([]);
@@ -51,9 +51,14 @@ export default function Users() {
                     <button className="ml-2 text-brand-700" onClick={() => { const n = prompt(`ชื่อ-นามสกุลของ ${u.username}`, u.display_name ?? ""); if (n !== null) patch({ id: u.user_id, action: "rename", display_name: n }, "บันทึกชื่อแล้ว"); }}>แก้ชื่อ</button>
                   </div>
                 </td><td>{u.role}</td><td>{u.email}</td><td>{u.teacher_id ?? "-"}</td>
-                <td>{Number(u.locked) ? <span className="text-rose-600">ถูกล็อก</span> : "ปกติ"}</td>
+                <td className="space-x-1 whitespace-nowrap text-xs">
+                  {!u.approved ? <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">รออนุมัติ</span>
+                    : Number(u.locked) ? <span className="rounded bg-rose-100 px-1.5 py-0.5 text-rose-700">ถูกล็อก</span> : <span>ปกติ</span>}
+                  {!u.is_email_verified && <span className="rounded bg-stone-100 px-1.5 py-0.5 text-stone-600">ยังไม่ยืนยันอีเมล</span>}
+                </td>
                 <td className="whitespace-nowrap text-right">
                   {Number(u.locked) ? <button className="px-2 text-brand-600" onClick={() => patch({ id: u.user_id, action: "unlock" }, `ปลดล็อก ${u.username} แล้ว`)}>ปลดล็อก</button> : null}
+                  {!u.approved && <button className="px-2 font-semibold text-emerald-700" onClick={() => patch({ id: u.user_id, action: "approve" }, `อนุมัติ ${u.username} แล้ว`)}>✓ อนุมัติ</button>}
                   {u.role !== "admin" && <button className="px-2 text-brand-700" onClick={() => startViewAs(u.username)}>👁️ ดูมุมมอง</button>}
                   <button className="px-2 text-amber-700" onClick={() => confirm(`รีเซ็ตรหัสผ่าน ${u.username}?`) && patch({ id: u.user_id, action: "reset" }, `รีเซ็ต ${u.username} แล้ว`)}>รีเซ็ตรหัสผ่าน</button>
                 </td>

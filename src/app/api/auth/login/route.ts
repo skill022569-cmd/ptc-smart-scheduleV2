@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { q } from "@/lib/db";
-import { audit, clientInfo, newOtp, setPending, sha256, maskEmail } from "@/lib/auth";
+import { audit, setPending, maskEmail } from "@/lib/auth";
 import { finishLogin, lockedMessage, registerFailure, USER_COLS, type LoginUser } from "@/lib/login";
-import { sendMail } from "@/lib/mail";
+import { sendOtp } from "@/lib/otp";
 
 const Body = z.object({ username: z.string().min(1).max(64), password: z.string().min(1).max(200), portal: z.enum(["student", "staff"]) });
 const DUMMY_HASH = bcrypt.hashSync("timing-equalizer", 10);
@@ -28,23 +28,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: await registerFailure(u, "password") }, { status: 401 });
   }
 
-  // shortcut: SKIP_OTP_USERNAMES (comma list, set only in Vercel env) bypasses 2FA while email delivery is being fixed; remove before real use.
+  if (!Number(u.approved)) {
+    return NextResponse.json({ error: "บัญชีนี้รอแอดมินอนุมัติก่อนใช้งาน กรุณาติดต่อฝ่ายวิชาการ" }, { status: 403 });
+  }
+
+  // Email not verified yet (new or admin-created account): sign in, then onboarding verifies the email by OTP
+  // before anything else works (requireUser / apiUser block until it is done).
+  // shortcut: SKIP_OTP_USERNAMES (comma list, set only in Vercel env) bypasses login 2FA for verified accounts while email delivery is being fixed; remove before real use.
   const skipOtp = (process.env.SKIP_OTP_USERNAMES ?? "").split(",").map((s) => s.trim()).filter(Boolean).includes(u.username);
-  if (u.role === "student" || skipOtp) {
-    if (skipOtp) await audit(u.user_id, "OTP_BYPASSED");
+  if (u.role === "student" || !Number(u.is_email_verified) || !u.email || skipOtp) {
+    if (skipOtp && Number(u.is_email_verified)) await audit(u.user_id, "OTP_BYPASSED");
     await finishLogin(u);
     return NextResponse.json({ ok: true });
   }
 
-  // Staff: second factor by email OTP.
-  if (!u.email) return NextResponse.json({ error: "บัญชีนี้ยังไม่ได้ลงทะเบียนอีเมล ติดต่อผู้ดูแลระบบ" }, { status: 400 });
-  const code = newOtp();
-  const { ua } = await clientInfo();
-  await q("INSERT INTO otp_logs (user_id, target_email, otp_code, purpose, device_info) VALUES (?,?,?,?,?)",
-    [u.user_id, u.email, sha256(code), "2FA_LOGIN", ua]);
-  await sendMail(u.email, "[PTC Smart Schedule] รหัส OTP สำหรับเข้าสู่ระบบ",
-    `รหัส OTP ของคุณคือ ${code}\nรหัสนี้ใช้ได้ภายใน 5 นาที ห้ามเปิดเผยรหัสนี้แก่ผู้อื่น`);
+  // Staff with a verified email: second factor by email OTP.
+  const err = await sendOtp(u.user_id, u.email, "2FA_LOGIN");
+  if (err) return NextResponse.json({ error: err }, { status: 429 });
   await setPending(u.user_id);
-  await audit(u.user_id, "OTP_SENT");
   return NextResponse.json({ otp: true, email: maskEmail(u.email) });
 }

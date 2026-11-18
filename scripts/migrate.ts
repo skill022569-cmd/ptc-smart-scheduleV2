@@ -45,6 +45,8 @@ async function main() {
 
   // Timetable sentences for vector Q&A live next to manual documents (see syncTimetableDocs).
   await c.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) NULL");
+  await c.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS approved BOOLEAN NOT NULL DEFAULT TRUE");
+  await c.query("ALTER TABLE otp_logs MODIFY COLUMN purpose ENUM('2FA_LOGIN','RESET_PASSWORD','VERIFY_EMAIL') NOT NULL");
 
   await c.query(`ALTER TABLE kb_docs
     ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'manual',

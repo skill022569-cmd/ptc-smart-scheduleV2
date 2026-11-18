@@ -3,12 +3,24 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { PDPA_VERSION } from "@/lib/config";
 
-export default function OnboardingForm({ mustChange }: { mustChange: boolean }) {
+export default function OnboardingForm({ mustChange, needEmail, email: initialEmail }: { mustChange: boolean; needEmail: boolean; email: string }) {
   const [consent, setConsent] = useState(false);
+  const [verified, setVerified] = useState(!needEmail);
+  const [email, setEmail] = useState(initialEmail);
+  const [sentTo, setSentTo] = useState("");
+  const [code, setCode] = useState("");
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  async function call(fn: () => Promise<void>) {
+    setBusy(true);
+    setError("");
+    try { await fn(); } catch (err) { setError((err as Error).message); } finally { setBusy(false); }
+  }
+  const sendCode = () => call(async () => setSentTo((await api("/api/me/verify-email", "POST", { email })).email));
+  const confirmCode = () => call(async () => { await api("/api/me/verify-email", "PUT", { code }); setVerified(true); });
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,6 +46,26 @@ export default function OnboardingForm({ mustChange }: { mustChange: boolean }) 
           <p>ข้อมูลถูกเข้ารหัสทั้งขณะจัดเก็บและรับส่ง อีเมลจะแสดงแบบปิดบังบางส่วนต่อผู้อื่น ประวัติการเข้าสู่ระบบจะถูกลบอัตโนมัติเมื่อครบ 1 ปี</p>
           <p>คุณสามารถขอส่งออกข้อมูลของตนเอง หรือขอลบบัญชีได้ตลอดเวลาที่หน้า โปรไฟล์</p>
         </div>
+        {!verified && (
+          <div className="space-y-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200">
+            <p className="font-medium">📧 ขั้นที่ 1: ยืนยันอีเมลของคุณด้วยรหัส OTP</p>
+            <div className="flex gap-2">
+              <input type="email" className="input" placeholder="อีเมลของคุณ" aria-label="อีเมล" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+              <button type="button" className="btn-ghost shrink-0" onClick={sendCode} disabled={busy || !email}>{sentTo ? "ส่งใหม่" : "ส่งรหัส"}</button>
+            </div>
+            {sentTo && (
+              <div className="space-y-2">
+                <p className="text-sm text-stone-600">ส่งรหัส 6 หลักไปที่ <b>{sentTo}</b> แล้ว (ใช้ได้ 5 นาที · ถ้าไม่เห็นให้ดูในโฟลเดอร์สแปม)</p>
+                <div className="flex gap-2">
+                  <input className="input text-center tracking-[0.4em]" inputMode="numeric" maxLength={6} aria-label="รหัส OTP" autoComplete="one-time-code"
+                    value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
+                  <button type="button" className="btn shrink-0" onClick={confirmCode} disabled={busy || code.length !== 6}>ยืนยัน</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {verified && needEmail && <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">✓ ยืนยันอีเมลเรียบร้อยแล้ว</p>}
         <label className="flex items-start gap-2">
           <input type="checkbox" className="mt-1 h-4 w-4" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
           <span>ฉันได้อ่านและยอมรับนโยบายความเป็นส่วนตัว</span>
@@ -54,7 +86,7 @@ export default function OnboardingForm({ mustChange }: { mustChange: boolean }) 
         {error && <p role="alert" className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
         <div className="flex gap-2">
           <a href="/api/auth/logout" className="btn-ghost flex-1">ไม่ยอมรับ / ออกจากระบบ</a>
-          <button className="btn flex-1" disabled={!consent || busy}>ยอมรับและเริ่มใช้งาน</button>
+          <button className="btn flex-1" disabled={!consent || !verified || busy}>ยอมรับและเริ่มใช้งาน</button>
         </div>
       </form>
     </div>

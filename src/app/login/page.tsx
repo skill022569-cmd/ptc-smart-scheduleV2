@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { clearSavedChats } from "@/app/assistant/Chat";
 import { api } from "@/lib/api";
@@ -47,6 +48,7 @@ export default function LoginPage() {
           <div className="mt-2 text-lg font-bold">สำหรับบุคลากร</div>
           <div className="text-sm text-stone-500">ครูและฝ่ายวิชาการ (ยืนยันตัวตน 2 ชั้นด้วย OTP ทางอีเมล)</div>
         </button>
+        <p className="text-center text-sm text-stone-500">ยังไม่มีบัญชี? <Link href="/signup" className="font-medium text-brand-700">สมัครสมาชิก (ยืนยันด้วย OTP ทางอีเมล)</Link></p>
       </div>
     );
   }

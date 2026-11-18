@@ -10,7 +10,7 @@ const tempPassword = () => randomBytes(6).toString("base64url") + "7";
 export async function GET() {
   if (!(await apiUser(["admin"]))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const rows = await q<{ email: string | null }>(
-    `SELECT u.user_id, u.username, COALESCE(u.display_name, t.full_name) AS display_name, u.role, u.email, u.pdpa_consent, (u.locked_until > NOW()) AS locked, t.teacher_id
+    `SELECT u.user_id, u.username, COALESCE(u.display_name, t.full_name) AS display_name, u.role, u.email, u.pdpa_consent, u.is_email_verified, u.approved, (u.locked_until > NOW()) AS locked, t.teacher_id
        FROM users u LEFT JOIN teachers t ON t.user_id=u.user_id WHERE u.role <> 'student' ORDER BY u.role, u.username`);
   return NextResponse.json(rows.map((r) => ({ ...r, email: maskEmail(r.email) })));
 }
@@ -65,6 +65,11 @@ export async function PATCH(req: Request) {
   if (action === "unlock") {
     await q("UPDATE users SET locked_until=NULL, failed_attempts=0 WHERE user_id=?", [id]);
     await audit(s.uid, "ADMIN_UNLOCK", { user: id });
+    return NextResponse.json({ ok: true });
+  }
+  if (action === "approve") {
+    await q("UPDATE users SET approved=TRUE WHERE user_id=?", [id]);
+    await audit(s.uid, "ADMIN_APPROVE_USER", { user: id });
     return NextResponse.json({ ok: true });
   }
   if (action === "rename") {

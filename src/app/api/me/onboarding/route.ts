@@ -12,7 +12,9 @@ export async function POST(req: Request) {
   const { consent, newPassword } = (await req.json().catch(() => ({}))) as { consent?: boolean; newPassword?: string };
   if (consent !== true) return NextResponse.json({ error: "ต้องยอมรับนโยบายความเป็นส่วนตัวก่อนใช้งาน" }, { status: 400 });
 
-  const [u] = await q<{ must_change_password: number }>("SELECT must_change_password FROM users WHERE user_id=?", [s.uid]);
+  const [u] = await q<{ must_change_password: number; is_email_verified: number }>(
+    "SELECT must_change_password, is_email_verified FROM users WHERE user_id=?", [s.uid]);
+  if (!u?.is_email_verified) return NextResponse.json({ error: "กรุณายืนยันอีเมลด้วยรหัส OTP ก่อน" }, { status: 400 });
   if (u?.must_change_password) {
     const err = passwordProblem(newPassword, s.username);
     if (err) return NextResponse.json({ error: err }, { status: 400 });

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash VARCHAR(100) NOT NULL,
   email VARCHAR(255) NULL UNIQUE,
   is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  approved BOOLEAN NOT NULL DEFAULT TRUE, -- FALSE = teacher self-signup waiting for admin approval
   role ENUM('student','teacher','admin') NOT NULL,
   must_change_password BOOLEAN NOT NULL DEFAULT TRUE,
   pdpa_consent BOOLEAN NOT NULL DEFAULT FALSE,
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS otp_logs (
   user_id BIGINT NOT NULL,
   target_email VARCHAR(255) NOT NULL,
   otp_code CHAR(64) NOT NULL, -- sha256 of the 6-digit code, never the code itself
-  purpose ENUM('2FA_LOGIN','RESET_PASSWORD') NOT NULL,
+  purpose ENUM('2FA_LOGIN','RESET_PASSWORD','VERIFY_EMAIL') NOT NULL,
   device_info VARCHAR(512) NULL,
   used BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

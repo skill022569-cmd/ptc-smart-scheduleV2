@@ -6,11 +6,11 @@ import { parseJson } from "./timetable";
 
 export type LoginUser = {
   user_id: string; username: string; password_hash: string; email: string | null; role: Role;
-  failed_attempts: number; lock_left: number | null; known_devices: unknown;
+  failed_attempts: number; lock_left: number | null; known_devices: unknown; is_email_verified: number; approved: number;
   locked: number | string; // comparison result is BIGINT, which comes back as the string "0"/"1"
 };
 
-export const USER_COLS = `user_id, username, password_hash, email, role, failed_attempts, known_devices,
+export const USER_COLS = `user_id, username, password_hash, email, role, failed_attempts, known_devices, is_email_verified, approved,
   (locked_until IS NOT NULL AND locked_until > NOW()) AS locked,
   CEIL(TIMESTAMPDIFF(SECOND, NOW(), locked_until) / 60) AS lock_left`;
 
@@ -32,7 +32,7 @@ export async function registerFailure(u: LoginUser, kind: "password" | "otp") {
     }
     return `ผิดเกิน ${MAX_ATTEMPTS} ครั้ง บัญชีถูกล็อก ${LOCK_MINUTES} นาที`;
   }
-  return `${kind === "otp" ? "รหัส OTP" : "ชื่อผู้ใช้หรือรหัสผ่าน"}ไม่ถูกต้อง (เหลือ ${MAX_ATTEMPTS - r.failed_attempts} ครั้ง)`;
+  return `${kind === "otp" ? "รหัส OTP " : "ชื่อผู้ใช้หรือรหัสผ่าน"}ไม่ถูกต้อง (เหลือ ${MAX_ATTEMPTS - r.failed_attempts} ครั้ง)`;
 }
 
 export async function finishLogin(u: LoginUser) {
