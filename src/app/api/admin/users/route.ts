@@ -25,7 +25,14 @@ export async function POST(req: Request) {
   const s = await apiUser(["admin"]);
   if (!s) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const p = Create.safeParse(await req.json().catch(() => null));
-  if (!p.success) return NextResponse.json({ error: "ชื่อผู้ใช้ (a-z 0-9 . _ -) หรืออีเมลไม่ถูกต้อง" }, { status: 400 });
+  if (!p.success) {
+    // Name the field that is wrong; the old combined message made a valid email look invalid.
+    const field = p.error.issues[0]?.path[0];
+    const error = field === "username"
+      ? "ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษตัวเล็ก ตัวเลข หรือ . _ - ยาว 3–64 ตัว ห้ามมีภาษาไทยหรือเว้นวรรค เช่น navakit.m"
+      : field === "email" ? "รูปแบบอีเมลไม่ถูกต้อง" : "ข้อมูลไม่ถูกต้อง";
+    return NextResponse.json({ error }, { status: 400 });
+  }
   const password = tempPassword();
   try {
     await tx(async (c) => {

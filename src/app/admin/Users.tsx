@@ -71,7 +71,8 @@ export default function Users() {
         </form>
         <form onSubmit={create} className="card space-y-2">
           <h2 className="font-bold">➕ สร้างบัญชีครู/แอดมิน</h2>
-          <input className="input" placeholder="ชื่อผู้ใช้" aria-label="ชื่อผู้ใช้" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
+          <input className="input" placeholder="ชื่อผู้ใช้ภาษาอังกฤษ เช่น navakit.m" aria-label="ชื่อผู้ใช้" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase() })} required
+            pattern="[a-z0-9._\-]{3,64}" title="ภาษาอังกฤษตัวเล็ก ตัวเลข หรือ . _ - ยาว 3–64 ตัว ไม่มีเว้นวรรค" autoCapitalize="none" />
           <input className="input" type="email" placeholder="อีเมล (รับ OTP)" aria-label="อีเมล" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           <select className="input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} aria-label="สิทธิ์">
             <option value="teacher">ครู</option><option value="admin">ฝ่ายวิชาการ/แอดมิน</option>
