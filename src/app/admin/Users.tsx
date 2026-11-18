@@ -9,6 +9,7 @@ export default function Users() {
   const [form, setForm] = useState({ display_name: "", username: "", email: "", role: "teacher", teacher_id: "" });
   const [student, setStudent] = useState("");
   const [viewAs, setViewAs] = useState("");
+  const [delStudent, setDelStudent] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = useCallback(async () => setUsers(await api("/api/admin/users")), []);
@@ -31,6 +32,10 @@ export default function Users() {
       window.location.href = "/schedule"; // full reload so the header and menu switch to that user's view
     } catch (e) { setMsg({ ok: false, text: (e as Error).message }); }
   }
+  const removeAccount = (query: string, who: string) => {
+    if (!confirm(`ลบบัญชีล็อกอินของ ${who}?\n\nข้อมูลนักเรียน/ครูและตารางเรียนยังอยู่ เจ้าของสมัครใหม่ได้ที่หน้าสมัครสมาชิก\nการลบย้อนกลับไม่ได้`)) return;
+    run(async () => { await api(`/api/admin/users?${query}`, "DELETE"); return `ลบบัญชี ${who} แล้ว`; });
+  };
   const patch = (body: object, label: string) => run(async () => {
     const r = await api("/api/admin/users", "PATCH", body);
     return r.password ? `${label} รหัสผ่านชั่วคราว: ${r.password} (แสดงครั้งเดียว)` : label;
@@ -60,6 +65,7 @@ export default function Users() {
                   {Number(u.locked) ? <button className="px-2 text-brand-600" onClick={() => patch({ id: u.user_id, action: "unlock" }, `ปลดล็อก ${u.username} แล้ว`)}>ปลดล็อก</button> : null}
                   {!u.approved && <button className="px-2 font-semibold text-emerald-700" onClick={() => patch({ id: u.user_id, action: "approve" }, `อนุมัติ ${u.username} แล้ว`)}>✓ อนุมัติ</button>}
                   {u.role !== "admin" && <button className="px-2 text-brand-700" onClick={() => startViewAs(u.username)}>👁️ ดูมุมมอง</button>}
+                  <button className="px-2 text-rose-700" onClick={() => removeAccount(`id=${u.user_id}`, u.username)}>🗑️ ลบ</button>
                   <button className="px-2 text-amber-700" onClick={() => confirm(`รีเซ็ตรหัสผ่าน ${u.username}?`) && patch({ id: u.user_id, action: "reset" }, `รีเซ็ต ${u.username} แล้ว`)}>รีเซ็ตรหัสผ่าน</button>
                 </td>
               </tr>
@@ -95,6 +101,12 @@ export default function Users() {
           <h2 className="font-bold">🎓 นักเรียนลืมรหัสผ่าน / ถูกล็อก</h2>
           <input className="input" placeholder="รหัสนักศึกษา" aria-label="รหัสนักศึกษา" value={student} onChange={(e) => setStudent(e.target.value)} required />
           <button className="btn w-full">รีเซ็ตรหัสผ่าน + ปลดล็อก</button>
+        </form>
+        <form className="card space-y-2" onSubmit={(e) => { e.preventDefault(); removeAccount(`username=${encodeURIComponent(delStudent.trim())}`, delStudent.trim()); }}>
+          <h2 className="font-bold">🗑️ ลบบัญชีนักเรียน</h2>
+          <p className="text-xs text-stone-500">ลบเฉพาะบัญชีล็อกอิน รายชื่อนักเรียนและกลุ่มเรียนยังอยู่</p>
+          <input className="input" placeholder="รหัสนักศึกษา" aria-label="รหัสนักศึกษาที่จะลบบัญชี" value={delStudent} onChange={(e) => setDelStudent(e.target.value)} required />
+          <button className="btn-danger w-full">ลบบัญชี</button>
         </form>
         {msg && <p role="status" className={`rounded-xl p-3 text-sm ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>{msg.text}</p>}
       </div>

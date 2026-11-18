@@ -87,3 +87,23 @@ export async function PATCH(req: Request) {
   }
   return NextResponse.json({ error: "unknown action" }, { status: 400 });
 }
+
+// Deletes only the login account (?id= or ?username=). Student/teacher records, timetable and audit trail stay,
+// so the person can sign up again. Admins cannot delete their own account.
+export async function DELETE(req: Request) {
+  const s = await apiUser(["admin"]);
+  if (!s) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const sp = new URL(req.url).searchParams;
+  const [u] = await q<{ user_id: string; username: string; role: string }>(
+    "SELECT user_id, username, role FROM users WHERE user_id=? OR username=?", [sp.get("id") ?? "", sp.get("username") ?? ""]);
+  if (!u) return NextResponse.json({ error: "ไม่พบบัญชีนี้" }, { status: 404 });
+  if (u.user_id === s.uid) return NextResponse.json({ error: "ลบบัญชีของตัวเองไม่ได้ ให้แอดมินคนอื่นลบให้" }, { status: 400 });
+  await tx(async (c) => {
+    await c.query("UPDATE students SET user_id=NULL WHERE user_id=?", [u.user_id]);
+    await c.query("UPDATE teachers SET user_id=NULL WHERE user_id=?", [u.user_id]);
+    await c.query("DELETE FROM otp_logs WHERE user_id=?", [u.user_id]);
+    await c.query("DELETE FROM users WHERE user_id=?", [u.user_id]);
+  });
+  await audit(s.uid, "ADMIN_DELETE_USER", { username: u.username, role: u.role });
+  return NextResponse.json({ ok: true });
+}
