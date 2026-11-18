@@ -10,12 +10,13 @@ const tempPassword = () => randomBytes(6).toString("base64url") + "7";
 export async function GET() {
   if (!(await apiUser(["admin"]))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const rows = await q<{ email: string | null }>(
-    `SELECT u.user_id, u.username, u.role, u.email, u.pdpa_consent, (u.locked_until > NOW()) AS locked, t.teacher_id
+    `SELECT u.user_id, u.username, COALESCE(u.display_name, t.full_name) AS display_name, u.role, u.email, u.pdpa_consent, (u.locked_until > NOW()) AS locked, t.teacher_id
        FROM users u LEFT JOIN teachers t ON t.user_id=u.user_id WHERE u.role <> 'student' ORDER BY u.role, u.username`);
   return NextResponse.json(rows.map((r) => ({ ...r, email: maskEmail(r.email) })));
 }
 
 const Create = z.object({
+  display_name: z.string().trim().max(255).optional(),
   username: z.string().regex(/^[a-zA-Z0-9._-]{3,64}$/), email: z.string().email(), role: z.enum(["teacher", "admin"]),
   teacher_id: z.string().optional(),
 });
@@ -36,8 +37,8 @@ export async function POST(req: Request) {
   const password = tempPassword();
   try {
     await tx(async (c) => {
-      await c.query("INSERT INTO users (username, password_hash, email, is_email_verified, role, must_change_password) VALUES (?,?,?,FALSE,?,TRUE)",
-        [p.data.username, await bcrypt.hash(password, 10), p.data.email, p.data.role]);
+      await c.query("INSERT INTO users (username, display_name, password_hash, email, is_email_verified, role, must_change_password) VALUES (?,?,?,?,FALSE,?,TRUE)",
+        [p.data.username, p.data.display_name || null, await bcrypt.hash(password, 10), p.data.email, p.data.role]);
       if (p.data.teacher_id) {
         const [r] = await c.query("UPDATE teachers SET user_id=(SELECT user_id FROM users WHERE username=?) WHERE teacher_id=?",
           [p.data.username, p.data.teacher_id]);
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   const s = await apiUser(["admin"]);
   if (!s) return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  const body = (await req.json().catch(() => ({}))) as { id?: string; username?: string; action?: string };
+  const body = (await req.json().catch(() => ({}))) as { id?: string; username?: string; action?: string; display_name?: string };
   const { action } = body;
   // Students are not listed, so they can be addressed by username (student id).
   const id = body.id ?? (await q<{ user_id: string }>("SELECT user_id FROM users WHERE username=?", [body.username ?? ""]))[0]?.user_id;
@@ -64,6 +65,12 @@ export async function PATCH(req: Request) {
   if (action === "unlock") {
     await q("UPDATE users SET locked_until=NULL, failed_attempts=0 WHERE user_id=?", [id]);
     await audit(s.uid, "ADMIN_UNLOCK", { user: id });
+    return NextResponse.json({ ok: true });
+  }
+  if (action === "rename") {
+    const name = String((body as { display_name?: unknown }).display_name ?? "").trim().slice(0, 255);
+    await q("UPDATE users SET display_name=? WHERE user_id=?", [name || null, id]);
+    await audit(s.uid, "ADMIN_RENAME_USER", { user: id });
     return NextResponse.json({ ok: true });
   }
   if (action === "reset") {

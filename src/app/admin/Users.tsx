@@ -2,11 +2,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
-type U = { user_id: string; username: string; role: string; email: string; pdpa_consent: number; locked: string | number | null; teacher_id: string | null };
+type U = { user_id: string; username: string; display_name: string | null; role: string; email: string; pdpa_consent: number; locked: string | number | null; teacher_id: string | null };
 
 export default function Users() {
   const [users, setUsers] = useState<U[]>([]);
-  const [form, setForm] = useState({ username: "", email: "", role: "teacher", teacher_id: "" });
+  const [form, setForm] = useState({ display_name: "", username: "", email: "", role: "teacher", teacher_id: "" });
   const [student, setStudent] = useState("");
   const [viewAs, setViewAs] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -21,7 +21,7 @@ export default function Users() {
     ev.preventDefault();
     run(async () => {
       const r = await api("/api/admin/users", "POST", { ...form, teacher_id: form.teacher_id || undefined });
-      setForm({ username: "", email: "", role: "teacher", teacher_id: "" });
+      setForm({ display_name: "", username: "", email: "", role: "teacher", teacher_id: "" });
       return `สร้างบัญชีแล้ว รหัสผ่านชั่วคราว: ${r.password} (แสดงครั้งเดียว ผู้ใช้ต้องเปลี่ยนเมื่อเข้าครั้งแรก)`;
     });
   };
@@ -41,11 +41,16 @@ export default function Users() {
       <section className="card overflow-x-auto">
         <h2 className="mb-2 font-bold">บัญชีบุคลากร</h2>
         <table className="w-full text-left text-sm">
-          <thead className="text-stone-500"><tr><th className="py-1">ชื่อผู้ใช้</th><th>สิทธิ์</th><th>อีเมล</th><th>รหัสครู</th><th>สถานะ</th><th /></tr></thead>
+          <thead className="text-stone-500"><tr><th className="py-1">ชื่อ / ชื่อผู้ใช้</th><th>สิทธิ์</th><th>อีเมล</th><th>รหัสครู</th><th>สถานะ</th><th /></tr></thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.user_id} className="border-t">
-                <td className="py-1.5">{u.username}</td><td>{u.role}</td><td>{u.email}</td><td>{u.teacher_id ?? "-"}</td>
+                <td className="py-1.5">
+                  <div className="font-medium">{u.display_name ?? "—"}</div>
+                  <div className="text-xs text-stone-500">{u.username}
+                    <button className="ml-2 text-brand-700" onClick={() => { const n = prompt(`ชื่อ-นามสกุลของ ${u.username}`, u.display_name ?? ""); if (n !== null) patch({ id: u.user_id, action: "rename", display_name: n }, "บันทึกชื่อแล้ว"); }}>แก้ชื่อ</button>
+                  </div>
+                </td><td>{u.role}</td><td>{u.email}</td><td>{u.teacher_id ?? "-"}</td>
                 <td>{Number(u.locked) ? <span className="text-rose-600">ถูกล็อก</span> : "ปกติ"}</td>
                 <td className="whitespace-nowrap text-right">
                   {Number(u.locked) ? <button className="px-2 text-brand-600" onClick={() => patch({ id: u.user_id, action: "unlock" }, `ปลดล็อก ${u.username} แล้ว`)}>ปลดล็อก</button> : null}
@@ -71,6 +76,7 @@ export default function Users() {
         </form>
         <form onSubmit={create} className="card space-y-2">
           <h2 className="font-bold">➕ สร้างบัญชีครู/แอดมิน</h2>
+          <input className="input" placeholder="ชื่อ-นามสกุล (ภาษาไทยได้) เช่น นวกิจ มีขันติ" aria-label="ชื่อ-นามสกุล" value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} maxLength={255} />
           <input className="input" placeholder="ชื่อผู้ใช้ภาษาอังกฤษ เช่น navakit.m" aria-label="ชื่อผู้ใช้" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase() })} required
             pattern="[a-z0-9._\-]{3,64}" title="ภาษาอังกฤษตัวเล็ก ตัวเลข หรือ . _ - ยาว 3–64 ตัว ไม่มีเว้นวรรค" autoCapitalize="none" />
           <input className="input" type="email" placeholder="อีเมล (รับ OTP)" aria-label="อีเมล" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />

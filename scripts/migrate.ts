@@ -44,6 +44,8 @@ async function main() {
   );
 
   // Timetable sentences for vector Q&A live next to manual documents (see syncTimetableDocs).
+  await c.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) NULL");
+
   await c.query(`ALTER TABLE kb_docs
     ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'manual',
     ADD COLUMN IF NOT EXISTS group_id VARCHAR(20) NULL,

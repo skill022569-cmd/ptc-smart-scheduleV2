@@ -1,4 +1,4 @@
-import { requireUser, maskEmail } from "@/lib/auth";
+import { requireUser, maskEmail, displayName } from "@/lib/auth";
 import { q } from "@/lib/db";
 import ProfileActions from "./actions";
 
@@ -27,7 +27,7 @@ export default async function Profile() {
       <section className="card space-y-2">
         <h1 className="text-xl font-bold">👤 โปรไฟล์</h1>
         <p><span className="text-stone-500">ชื่อผู้ใช้:</span> {s.username}</p>
-        <p><span className="text-stone-500">ชื่อ:</span> {student?.full_name ?? teacher?.full_name ?? "-"}</p>
+        <p><span className="text-stone-500">ชื่อ:</span> {(await displayName(s.uid)) ?? "-"}</p>
         <p><span className="text-stone-500">สถานะ:</span> {ROLE_TH[s.role]}</p>
         {student && <p><span className="text-stone-500">กลุ่มเรียน:</span> {student.group_name}</p>}
         {teacher && <p><span className="text-stone-500">แผนก:</span> {teacher.department}</p>}

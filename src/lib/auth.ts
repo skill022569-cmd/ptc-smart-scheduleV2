@@ -91,6 +91,14 @@ export async function audit(userId: string | null, event: string, detail: Record
     [userId, event, ip, ua, JSON.stringify(detail)]);
 }
 
+export async function displayName(uid: string) {
+  const [r] = await q<{ name: string | null }>(
+    `SELECT COALESCE(u.display_name, st.full_name, t.full_name) AS name FROM users u
+       LEFT JOIN students st ON st.user_id = u.user_id LEFT JOIN teachers t ON t.user_id = u.user_id
+      WHERE u.user_id = ?`, [uid]);
+  return r?.name ?? null;
+}
+
 export function maskEmail(email: string | null | undefined) {
   if (!email) return "-";
   const [name, domain] = email.split("@");

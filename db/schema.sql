@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS users (
   user_id BIGINT AUTO_RANDOM PRIMARY KEY,
   username VARCHAR(64) NOT NULL UNIQUE,
+  display_name VARCHAR(255) NULL, -- ชื่อ-นามสกุล (ภาษาไทยได้) shown instead of the login name
   password_hash VARCHAR(100) NOT NULL,
   email VARCHAR(255) NULL UNIQUE,
   is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,

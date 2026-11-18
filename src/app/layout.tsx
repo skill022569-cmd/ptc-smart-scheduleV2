@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Sarabun } from "next/font/google";
-import { getSession } from "@/lib/auth";
+import { displayName, getSession } from "@/lib/auth";
 import NavLinks from "@/components/NavLinks";
 import { APP_VERSION } from "@/lib/version";
 import "./globals.css";
@@ -18,6 +18,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const s = await getSession();
+  const [myName, actorName] = s ? await Promise.all([displayName(s.uid), s.actor ? displayName(s.actor.uid) : null]) : [null, null];
   const links = [
     { href: "/", label: "หน้าแรก" },
     { href: "/schedule", label: s?.role === "teacher" ? "ตารางสอน" : "ตารางเรียน" },
@@ -33,7 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {s?.actor && (
             <div role="status" className="bg-amber-500 text-amber-950">
               <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5 text-sm">
-                <span>👁️ <b>{s.actor.username}</b> กำลังดูเว็บในมุมมองของ <b>{s.username}</b> ({s.role === "teacher" ? "ครู" : "นักเรียน"})</span>
+                <span>👁️ <b>{actorName ?? s.actor.username}</b> กำลังดูเว็บในมุมมองของ <b>{myName ?? s.username}</b> ({s.role === "teacher" ? "ครู" : "นักเรียน"})</span>
                 <a href="/api/impersonate" className="ml-auto rounded-md bg-amber-950 px-3 py-0.5 font-semibold text-amber-50 hover:bg-black">กลับเป็นแอดมิน</a>
               </div>
             </div>
@@ -50,7 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </Link>
               <span className="ml-auto" />
               {s ? (
-                <Link href="/profile" className="shrink-0 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium ring-1 ring-white/25 hover:bg-white/20">👤 {s.username}</Link>
+                <Link href="/profile" className="shrink-0 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium ring-1 ring-white/25 hover:bg-white/20">👤 {myName ?? s.username}</Link>
               ) : (
                 <Link href="/login" className="shrink-0 rounded-lg bg-gold-400 px-4 py-2 text-sm font-bold text-brand-900 hover:bg-gold-300">เข้าสู่ระบบ</Link>
               )}
